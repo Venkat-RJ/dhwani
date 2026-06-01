@@ -46,3 +46,9 @@ Deeper detail: **BUILD.md**.
 - Data dir is `~/.talky/` (`voice_history/`, `voice_input.txt`, `talky_cmd`).
 - Never commit `build/`, `DerivedData/`, `video/node_modules/`, `.DS_Store` (see `.gitignore`).
 - The explainer video is Remotion source in `video/` (`cd video && npm run render`).
+
+## Testing
+End-to-end dictation is tested with a virtual-audio loopback (BlackHole) + `say`,
+driven through the `~/.talky/talky_cmd` hook — no human needed. Run
+`./test/voice-test.sh [sentence_count]`. Details and the coverage caveat are in
+**TESTING.md**.
