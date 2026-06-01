@@ -1,0 +1,13 @@
+# macOS
+.DS_Store
+
+# Xcode / build
+build/
+DerivedData/
+*.xcuserstate
+xcuserdata/
+*.xcscmblueprint
+
+# Local agent / tooling state (not part of the project)
+.claude/
+.gstack/
