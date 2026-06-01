@@ -19,7 +19,17 @@ A floating, always-on-top dictation widget. Press a hotkey, talk, and the transc
 - **History** — every dictation saved to `~/.talky/voice_history/`, browsable in-app (🕑).
 - **Launches at login** and stays out of your way.
 
-## Install & use (for the team)
+## Get the app (no build — recommended for most)
+
+1. Download the latest **Lokaah-Talky.dmg** from **[Releases](https://github.com/venkat-lokaah/lokaah-talky/releases/latest)** and open it.
+2. Drag **Lokaah Talky** onto **Applications**.
+3. Clear the quarantine flag once (internal unsigned build), paste in Terminal:
+   ```bash
+   xattr -dr com.apple.quarantine "/Applications/Lokaah Talky.app"
+   ```
+4. Open **Lokaah Talky**, grant **Microphone**, **Speech Recognition**, and **Accessibility** when asked. Done — see [Using it](#using-it).
+
+## Build from source (for developers)
 
 **Requirements:** macOS 14+ (built against the macOS 26 SDK), Apple Silicon, Xcode 16+.
 
