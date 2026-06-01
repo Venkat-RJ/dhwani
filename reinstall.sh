@@ -19,20 +19,23 @@ SCHEME="Lokaah Talky"
 DEST_DIR="/Applications"
 SIGN_IDENTITY="Talky Self-Signed"
 PROJECT_DIR="$(cd "$(dirname "$0")" && pwd)"
+# Deterministic build location (this repo only) so we never grab a stale
+# same-named app from some other DerivedData folder.
+DERIVED="$PROJECT_DIR/build"
+SRC="$DERIVED/Build/Products/Debug/$APP_NAME"
 
 if [ "${1:-}" = "--build" ]; then
     echo "> Building..."
-    ( cd "$PROJECT_DIR" && xcodebuild -project "$PROJECT" -scheme "$SCHEME" -configuration Debug build ) >/tmp/hermes_build.log 2>&1
-    if ! grep -q "BUILD SUCCEEDED" /tmp/hermes_build.log; then
-        echo "x Build failed -- see /tmp/hermes_build.log"; tail -20 /tmp/hermes_build.log; exit 1
+    ( cd "$PROJECT_DIR" && xcodebuild -project "$PROJECT" -scheme "$SCHEME" -configuration Debug \
+        -derivedDataPath "$DERIVED" build ) >/tmp/lt_build.log 2>&1
+    if ! grep -q "BUILD SUCCEEDED" /tmp/lt_build.log; then
+        echo "x Build failed -- see /tmp/lt_build.log"; tail -20 /tmp/lt_build.log; exit 1
     fi
     echo "  build ok"
 fi
 
-# Resolve the freshly built .app (the real product, not the Index.noindex copy).
-SRC="$(find "$HOME/Library/Developer/Xcode/DerivedData" -type d -name "$APP_NAME" -path "*/Build/Products/Debug/*" 2>/dev/null | grep -v "Index.noindex" | head -1)"
-if [ -z "$SRC" ] || [ ! -d "$SRC" ]; then
-    echo "x Couldn't find a built '$APP_NAME'. Run with --build first."; exit 1
+if [ ! -d "$SRC" ]; then
+    echo "x No build at $SRC. Run: ./reinstall.sh --build"; exit 1
 fi
 echo "> Source: $SRC"
 

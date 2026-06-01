@@ -1073,15 +1073,16 @@ final class SpeechManager: ObservableObject {
         // 1b. Append to the dated, timestamped conversation history (never overwritten).
         appendHistory(text, in: dir)
 
-        // 2. Insert the text directly at the cursor in the frontmost app.
-        //    Direct insertion never touches your clipboard and works where ⌘V is blocked.
+        // 2. Always put it on the clipboard — a universal fallback you can ⌘V
+        //    anywhere, even if auto-paste fails.
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(text, forType: .string)
+
+        // 3. Auto-paste into the app that was focused when you started, using ⌘V.
+        //    ⌘V works everywhere (Terminal, editors, chat) — unlike per-app text
+        //    insertion, which some apps (e.g. Terminal) reject.
         guard Paster.isTrusted else {
-            // Can't synthesize input until Accessibility is granted. Fall back to the
-            // clipboard so the text isn't lost, and prompt for permission.
-            let pb = NSPasteboard.general
-            pb.clearContents()
-            pb.setString(text, forType: .string)
-            statusMessage = "Copied — enable Accessibility to auto-type"
+            statusMessage = "Copied — enable Accessibility to auto-paste"
             PanelChrome.dropForPrompt()
             Paster.requestTrust()
             return
@@ -1090,17 +1091,13 @@ final class SpeechManager: ObservableObject {
         let submit = autoSubmit
         let target = targetApp
         let appName = target?.localizedName ?? "the active app"
+        statusMessage = submit ? "Sent to \(appName) ✓" : "Pasted into \(appName) ✓"
         Task { @MainActor in
-            let inserted = TextInserter.insert(text, into: target)
-            if inserted {
-                statusMessage = submit ? "Sent to \(appName) ✓" : "Inserted into \(appName) ✓"
-            } else {
-                // No focused text field found; we typed blind into the frontmost app.
-                statusMessage = "Typed into \(appName) — click a text field if blank"
-            }
+            target?.activate()   // make sure the paste lands in the intended app
+            try? await Task.sleep(nanoseconds: 120_000_000)
+            Paster.paste()
             if submit {
-                // Let the insertion land before submitting.
-                try? await Task.sleep(nanoseconds: 60_000_000)
+                try? await Task.sleep(nanoseconds: 90_000_000)
                 Paster.pressReturn()
             }
         }
@@ -1183,7 +1180,19 @@ enum Paster {
         return AXIsProcessTrustedWithOptions([key: true] as CFDictionary)
     }
 
-    /// Simulates Return to submit whatever was just inserted.
+    /// Simulates ⌘V to paste the clipboard into the focused app.
+    static func paste() {
+        guard let source = CGEventSource(stateID: .combinedSessionState) else { return }
+        let v: CGKeyCode = 9 // ANSI "v"
+        let down = CGEvent(keyboardEventSource: source, virtualKey: v, keyDown: true)
+        down?.flags = .maskCommand
+        let up = CGEvent(keyboardEventSource: source, virtualKey: v, keyDown: false)
+        up?.flags = .maskCommand
+        down?.post(tap: .cghidEventTap)
+        up?.post(tap: .cghidEventTap)
+    }
+
+    /// Simulates Return to submit whatever was just pasted.
     static func pressReturn() {
         guard let source = CGEventSource(stateID: .combinedSessionState) else { return }
         let returnKeyCode: CGKeyCode = 36 // Return
