@@ -8,6 +8,12 @@
 
 <p align="center"><em>Internal tool · Lokaah · not for public distribution</em></p>
 
+<p align="center">
+  <img src="assets/demo.gif" width="600" alt="Lokaah Talky demo">
+</p>
+
+<p align="center">▶ <a href="assets/demo.mp4">Watch the demo (MP4)</a></p>
+
 ---
 
 A floating, always-on-top dictation widget. Press a hotkey, talk, and the transcript is typed into whatever app is focused — terminal, editor, chat, browser. Speech recognition runs **on-device**, so audio never leaves your Mac.
