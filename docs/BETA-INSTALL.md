@@ -1,10 +1,10 @@
 # Install the unnotarized Dhwani beta
 
-**No public beta installer has been released yet.**
-A private **Dhwani** DMG has been prepared for coordinated testing.
-It can be shared with a friend who understands that installation, dictation, and paste still need testing on another Mac.
-Older private packages named **Lokaah Talky** retain their name and original checksums.
-Use the exact filename, version, checksum, and test scope supplied by the maintainer.
+**[Download Dhwani for Mac](https://github.com/Venkat-RJ/dhwani/releases/download/v1.1.0-beta.4/Dhwani-1.1.0-beta.4-Apple-Silicon.dmg)**
+
+Free beta, version 1.1.0 beta 4.
+You can share the original installer and this guide with a friend.
+The [release page](https://github.com/Venkat-RJ/dhwani/releases/tag/v1.1.0-beta.4) includes checksums and the current testing record.
 
 This beta is signed with the project's local certificate and has not been notarized by Apple.
 macOS may block the first launch because it cannot verify the developer.
@@ -14,9 +14,7 @@ Use an Apple Silicon Mac with macOS 14 or newer.
 Windows, Linux, and Intel Macs are not supported by this build.
 The selected speech language needs an available on-device model.
 
-For a private test, use the exact package supplied by the maintainer with its version, checksum, and test scope.
-Public downloads, when available, belong on the [official Dhwani releases](https://github.com/Venkat-RJ/dhwani/releases).
-If no app asset is listed, a public downloadable beta has not been published yet.
+Download the DMG from the website or [official Dhwani releases](https://github.com/Venkat-RJ/dhwani/releases).
 GitHub's automatic source archives are source code, not the app.
 
 ## Install

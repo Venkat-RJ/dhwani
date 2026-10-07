@@ -6,6 +6,10 @@ It does not use Apple's notarization service or require a paid Developer ID cert
 It does not grant trust to the certificate on anyone's Mac.
 The [notarized release workflow](BINARY-RELEASE.md) remains a separate option.
 
+The maintainer requested public distribution of `v1.1.0-beta.4` as an experimental beta before full runtime acceptance.
+The website links its DMG directly. [Release notes](https://github.com/Venkat-RJ/dhwani/releases/tag/v1.1.0-beta.4) and the [verification record](VERIFICATION.md) describe completed and pending checks.
+This publication does not satisfy the verification workflow below or change its acceptance requirements.
+
 The app still uses Apple's Speech framework.
 Read [the privacy disclosure](PRIVACY.md).
 

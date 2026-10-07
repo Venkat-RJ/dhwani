@@ -3,7 +3,8 @@
 ## Project and writing
 
 Dhwani is an MIT-licensed macOS voice-dictation project.
-The public repository is a source preview; verified binary distribution has separate release gates.
+The public repository includes source and an experimental beta download.
+Verified binary distribution has separate release gates; beta publication does not establish that those gates passed.
 Never use em dashes in new writing.
 Use short paragraphs, clear new lines, and factual claims.
 

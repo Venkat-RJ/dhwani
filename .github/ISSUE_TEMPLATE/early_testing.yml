@@ -4,7 +4,7 @@ title: "Early testing: "
 body:
   - type: markdown
     attributes:
-      value: "Dhwani is a source preview with no public app download yet. Read docs/EARLY-TESTING.md. This issue is public: do not include personal dictations, recordings, contact details, or private screenshots. Report vulnerabilities through SECURITY.md."
+      value: "Download the Dhwani beta from https://venkat-rj.github.io/dhwani/ and read docs/EARLY-TESTING.md. This issue is public: do not include personal dictations, recordings, contact details, or private screenshots. Report vulnerabilities through SECURITY.md."
   - type: dropdown
     id: purpose
     attributes:

@@ -12,15 +12,15 @@ It uses Apple's speech engine and requires an available on-device language model
 
 ## Download and install
 
-**There is no public download link yet. Dhwani is in early testing.**
+**[Download Dhwani for Mac](https://github.com/Venkat-RJ/dhwani/releases/download/v1.1.0-beta.4/Dhwani-1.1.0-beta.4-Apple-Silicon.dmg)**
 
-A private DMG test package has been prepared. [Volunteer for a coordinated test](docs/EARLY-TESTING.md) to request access.
-Once a maintainer provides the file, open it and drag **Dhwani** into **Applications**.
+Free beta, version 1.1.0 beta 4. [Release notes and checksums](https://github.com/Venkat-RJ/dhwani/releases/tag/v1.1.0-beta.4).
+Open the DMG and drag **Dhwani** into **Applications**.
 Then open Dhwani and allow Microphone and Speech Recognition access.
 No Xcode or terminal commands are needed to install that package.
 It is not Apple-notarized, so macOS may also require **Open Anyway** in Privacy & Security.
 
-**[Volunteer to try the early beta](docs/EARLY-TESTING.md)**
+[Installation help](docs/BETA-INSTALL.md) · [Share feedback](docs/EARLY-TESTING.md)
 
 For Apple Silicon Macs, M1 or newer. The build targets macOS 14 or newer; live dictation on macOS 14 still needs testing.
 Windows, Linux, and Intel Macs are not supported by this build.

@@ -1,12 +1,30 @@
 # Verification record
 
-These checks were completed on 7 October 2026.
+These checks were recorded on 7 and 8 October 2026.
 Each entry describes what was checked and what the result establishes.
 Live dictation and verified binary distribution remain open in the [release checklist](../PRODUCT.md#release-readiness).
 
 The project was subsequently renamed from Lokaah Talky to Dhwani.
 Historical checks below retain their original hashes and artifact identity.
 They do not establish acceptance of a renamed installer.
+
+## Experimental public beta 4
+
+On 8 October 2026, the maintainer requested a public DMG download and a consumer marketing website.
+The beta is published before full runtime acceptance. Pending checks remain pending; the acceptance verifier was not weakened or represented as passing.
+
+The app comes from tag `v1.1.0-beta.4`, source commit `3f4f12d5d264c1f9990c4c2b16dd60d6682b3080`.
+The public DMG is `Dhwani-1.1.0-beta.4-Apple-Silicon.dmg`, SHA-256 `eadfb1e7232fde56ff101580601e20b12594dd4b1f6779931a81be3ef1df2022`.
+Its app payload matches the original beta 4 ZIP byte for byte. The disk image's readme now describes public installation.
+The disk image, strict app signature, expected local signer, Applications shortcut, bundled license, and privacy disclosure were checked.
+The exact mounted app passed an isolated startup and readiness probe on macOS 27.0.1 arm64, without recording or requesting permissions.
+
+The required 47 local checks passed again. CI for website commit `832dc27e78198e75f3105e11b752271c4f67b8c4` passed the unsigned Xcode build, all 96 checks, and startup on macOS 14 and 26.
+CI uses an ad-hoc test copy; it does not establish live acceptance of the locally signed public DMG.
+
+The maintainer reported a successful first launch on this Mac. This is a user report, not independent installation acceptance.
+Live dictation, cross-app paste, cancellation and permission recovery, offline and network observations, opt-in storage, and clean-Mac installation remain open.
+The beta is locally signed and is not Apple-notarized.
 
 ## Dhwani rename checks
 

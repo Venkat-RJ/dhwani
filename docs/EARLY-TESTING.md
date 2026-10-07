@@ -6,14 +6,11 @@ You do not need to write code to report a useful result.
 
 ## Get started
 
-**You do not need to build the app to volunteer as a tester.**
-There is no public download link yet.
-A private DMG test package is available for coordinated testing: open it and drag the app into Applications.
-The original ZIP candidate is also retained.
+**You do not need to build the app.**
+[Download the Dhwani beta](https://github.com/Venkat-RJ/dhwani/releases/download/v1.1.0-beta.4/Dhwani-1.1.0-beta.4-Apple-Silicon.dmg), open the DMG, and drag the app into Applications.
+Follow the [installation guide](BETA-INSTALL.md).
 
-[Register your interest in testing](https://github.com/Venkat-RJ/dhwani/issues/new?template=early_testing.yml) using a GitHub account.
-A maintainer can then coordinate an appropriate candidate and test scope with you.
-Submitting the form does not install anything or guarantee a download.
+[Share your test results](https://github.com/Venkat-RJ/dhwani/issues/new?template=early_testing.yml) using a GitHub account.
 Developers who prefer to compile the app can follow [BUILD.md](../BUILD.md).
 
 The build targets macOS 14 or newer on Apple Silicon.

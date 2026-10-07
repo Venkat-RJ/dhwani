@@ -27,7 +27,9 @@ There is no published accuracy benchmark or evidence that Dhwani is better than 
 The current engine remains Apple's Speech framework.
 The [privacy disclosure](docs/PRIVACY.md) distinguishes source configuration, Apple's policies, and unverified runtime network behavior.
 Distribution can use an [unnotarized beta](docs/UNNOTARIZED-BETA.md) with a local signing certificate, or the [Apple-notarized release path](docs/BINARY-RELEASE.md).
-Both require runtime acceptance of the final archive.
+Both verification workflows require runtime acceptance of the final archive.
+The maintainer has requested an experimental public beta before full runtime acceptance.
+Its release notes and verification record retain the unfinished checks.
 
 ## What users have reported
 
@@ -172,8 +174,9 @@ Fix lost work, unintended insertion, blocked activation, and unclear recovery be
 ## Release readiness
 
 **1.1.0-beta.1 is a source preview.**
-The checklist covers that preview and the work on `main` toward a verified downloadable app.
-It was updated on 7 October 2026.
+**1.1.0-beta.4 is an experimental public download, not a fully verified release.**
+The checklist covers these releases and the work on `main` toward a verified app.
+It was updated on 8 October 2026.
 See [verification details](docs/VERIFICATION.md) for exact commits, hashes, CI runs, and limits.
 
 ### Source and development checks
