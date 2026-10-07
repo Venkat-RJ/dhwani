@@ -127,7 +127,16 @@ h3 {
 }
 
 .source-link {
-  color:var(--green)
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  min-height:44px;
+  color:var(--green);
+  white-space:nowrap
+}
+
+.github-mark {
+  flex-shrink:0
 }
 
 .hero {
@@ -954,6 +963,10 @@ footer nav a {
 }
 
 @media(max-width:380px) {
+  .brand { flex-shrink:0 }
+  .site-header nav { gap:10px }
+  .source-link { min-width:44px; justify-content:center; gap:0 }
+  .github-label { display:none }
   .hero-actions .button { width:100% }
   .hero-secondary { padding:4px 0 }
   .scene-label { font-size:8px; letter-spacing:.08em }
