@@ -1,145 +1,219 @@
-# Product scope and release readiness
+# Product plan
 
 ## Purpose
 
-Make daily voice dictation useful across macOS apps while keeping recognition local and delivery deliberate.
-The main uses are prose, technical notes, short code and terminal instructions, and longer spoken drafts.
-The app should also remain usable through keyboard controls and accessible labels.
+Make voice dictation useful in everyday macOS work.
+Keep recognition on-device and make text delivery predictable.
 
-The widget should explain permission problems, unavailable local models, and blocked delivery in plain language.
-Users should be able to cancel, retrieve a transcript, and choose whether anything is retained.
+People should be able to write prose, take technical notes, and speak longer drafts.
+They should also be able to use the widget and controls with a keyboard.
 
-## Current scope
+When something fails, explain what happened and where the available text can be found.
+Let people cancel a capture and decide what gets saved.
 
-- Floating compact widget and expanded transcript view.
-- Option-Space to start or finish, Option-Escape to cancel.
-- On-device recognition for a supported selected locale and local contextual vocabulary.
-- Clipboard delivery with automatic paste only to the unchanged original app and focused element.
-- Optional auto-send, history, retention, latest-transcript automation output, and launch at login.
-- Isolated command-driven test captures with per-run result files.
-- Read-only readiness probes for automated app startup checks.
+## What is available
 
-Cross-app accuracy and long-capture reliability require runtime evidence.
-There is no claim of competitive superiority or a published recognition benchmark.
-Historical marketing files are not proof of current behavior.
+- A compact floating widget and an expanded transcript view.
+- Option-Space to start or finish, and Option-Escape to cancel.
+- On-device recognition with a selected language and local vocabulary hints.
+- Clipboard copy and automatic paste when the original app and text field still match.
+- Optional auto-send, history, retention, latest-transcript output, and launch at login.
+- Isolated recording tests and startup probes.
 
-## Evidence from dictation users
+These features are present in source.
+Live recognition, long captures, and cross-app delivery still need acceptance testing.
+There is no published accuracy benchmark or evidence that Talky is better than other dictation apps.
 
-The following primary reports were checked on 7 October 2026.
-They are a small sample from other open-source projects, not Talky bug reports, a survey, or evidence of how common a problem is.
-Some reports are now closed. Their historical observations still define useful validation cases; closure alone does not prove a current defect or fix.
-The priorities below are our interpretation of those reports.
+## What users have reported
 
-| Need and source | Talky today | Next evidence needed |
-| --- | --- | --- |
-| Keep complete long drafts and identify incomplete output. A reporter compared the same long recording under two settings and obtained very different output lengths. [VoiceInk #853](https://github.com/Beingpax/VoiceInk/issues/853) | Capture-scoped sessions drain before finalization; interruptions retain available text. Full-length live results remain unverified. | Repeat the four-minute corpus three times. Inspect early, middle, and final text, deletion/duplication diagnostics, and completion latency. |
-| Insert the right text while keeping it recoverable. A macOS user reported older clipboard contents appearing instead of speech. A separate user wanted their prior clipboard preserved. [Handy #502](https://github.com/cjpais/Handy/issues/502), [#921](https://github.com/cjpais/Handy/issues/921) | Regular dictation deliberately replaces the clipboard and pastes with Command-V after destination checks. Prior clipboard restoration is not implemented. | Verify actual receiving-app contents under load and changed focus. Validate the clipboard tradeoff with users before adding restoration; a timed restore can race a slow receiver. |
-| Recognize names and technical terms without changing ordinary words indiscriminately. A Portuguese-language user requested contextual vocabulary and cautioned against unconditional replacement. [VoiceInk #862](https://github.com/Beingpax/VoiceInk/issues/862) | Local vocabulary hints are supplied to recognition. Their accuracy benefit has not been measured. | Paired vocabulary-on/off utterances with exact-name scoring and ordinary-word controls. Keep locale and lexical scores visible. |
-| Make language choice predictable. A multilingual user preferred explicit language choice and requested faster workflow switching. [Handy discussion #1534](https://github.com/cjpais/Handy/discussions/1534) | The selected locale is explicit. Frequent switching, Indian English, and code-switching have not been accepted. | Alternate three captures between two locally available languages and record selection steps, output language, and vocabulary behavior. |
-| Explain incomplete setup and recover after an upgrade. A macOS report described hidden onboarding after a microphone prompt and ineffective old Accessibility entries. [Handy #1618](https://github.com/cjpais/Handy/issues/1618) | Explicit permission rows, polling, settings links, stable local signing, and clipboard-only delivery are available. Runtime denial/recovery remains pending. | Fresh setup, returning from System Settings, deny/regrant, and one signed upgrade. Verify the user can continue without granting Accessibility. Do not reset permissions automatically. |
-| Support activation that fits the user and foreground app. One user requested single-key double-tap activation because simultaneous keys were difficult; another report described app-specific global-shortcut interference. [VoiceInk #516](https://github.com/Beingpax/VoiceInk/issues/516), [Cline #14148](https://github.com/cline/cline/issues/14148) | Fixed Option-Space/Option-Escape shortcuts and labeled clickable controls exist. Registration checks do not prove universal usability. | Keyboard-only and VoiceOver tasks, limited-dexterity feedback, multiple keyboard layouts, and activation in each supported destination. Choose any new shortcut scheme from observed needs. |
-| Find preserved work when something fails. A user found recovery existed but the failure banner did not explain how to reach it. [TypeWhisper #1267](https://github.com/TypeWhisper/typewhisper-mac/issues/1267) | Available transcript text, Copy, and interruption status are exposed. Raw recordings are not saved for recovery. | Ask a first-time tester to recover a synthetic partial result without telling them where to look. Explain precisely what was preserved and what was discarded. |
-| Correct speech into usable text without ambiguous command behavior. A discussion requested spoken punctuation and local correction, while participants noted that command words can also be ordinary text. [Handy discussion #1805](https://github.com/cjpais/Handy/discussions/1805) | The transcript can be selected and copied. It has no correction editor or spoken-command parser. | Eight synthetic correction and literal-command examples; measure time and steps to finish. Evaluate a small review/edit flow before a broader command system. |
+We checked the reports below on 7 October 2026.
+They come from other open-source projects.
+They are individual observations, not Talky bug reports or a survey.
 
-First priority is dependable capture, recovery, and destination delivery.
-Then measure vocabulary, locale, correction, and activation friction.
-These observations do not justify adding cloud processing, raw-audio persistence, telemetry, automatic updates, or unconditional text replacements by default.
+Some reports are closed.
+They still provide useful test cases, but do not establish how common a problem is or whether it remains in the other app.
+The priorities here are our interpretation of those reports.
 
-## Task-based feedback
+### Keep the whole draft
+
+A user compared the same long recording under two settings and received very different amounts of text.
+See [VoiceInk #853](https://github.com/Beingpax/VoiceInk/issues/853).
+
+Talky waits for recognition sessions to finish and retains available text after an interruption.
+We have not verified complete long drafts in live tests.
+
+Next check: repeat the four-minute corpus three times.
+Inspect the beginning, middle, and end for missing or repeated words, and record the time to final text.
+
+### Paste the right text and keep it recoverable
+
+One macOS user reported older clipboard text being pasted instead of speech.
+Another wanted the previous clipboard contents preserved.
+See [Handy #502](https://github.com/cjpais/Handy/issues/502) and [#921](https://github.com/cjpais/Handy/issues/921).
+
+Talky replaces the clipboard with regular dictation and uses Command-V after checking the destination.
+It does not restore the previous clipboard contents.
+
+Next check: inspect the actual receiving text in several apps, under load and after changing focus.
+Ask users whether clipboard restoration would help before adding it.
+A timed restore can run before a slow app reads the transcript.
+
+### Recognize names without changing ordinary words
+
+A Portuguese-language user requested contextual vocabulary and cautioned against unconditional replacement.
+See [VoiceInk #862](https://github.com/Beingpax/VoiceInk/issues/862).
+
+Talky supplies local vocabulary hints to the recognizer.
+We have not measured their effect on accuracy.
+
+Next check: compare the same utterances with hints on and off.
+Score exact names and technical terms, with ordinary words as controls.
+Record the locale and both lexical and locale-normalized scores.
+
+### Make language choice predictable
+
+A multilingual user preferred explicit language choice and wanted faster workflow switching.
+See [Handy discussion #1534](https://github.com/cjpais/Handy/discussions/1534).
+
+Talky shows the selected locale.
+Frequent switching, Indian English, and code-switching still need testing.
+
+Next check: alternate three captures between two locally available languages.
+Record the selected language, output language, vocabulary behavior, and steps needed to switch.
+
+### Make setup and upgrades understandable
+
+A macOS user reported hidden setup after a microphone prompt and ineffective old Accessibility entries.
+See [Handy #1618](https://github.com/cjpais/Handy/issues/1618).
+
+Talky shows permission rows, checks permissions again, links to System Settings, and supports manual clipboard paste.
+A stable local signing identity is available for development.
+Live permission denial and recovery are still unverified.
+
+Next check: fresh setup, return from System Settings, denial and regrant, and a signed upgrade.
+Check that dictation remains usable without Accessibility.
+Do not reset permissions automatically.
+
+### Make activation usable
+
+One user requested single-key double-tap activation because simultaneous keys were difficult.
+Another reported a foreground app interfering with global shortcuts.
+See [VoiceInk #516](https://github.com/Beingpax/VoiceInk/issues/516) and [Cline #14148](https://github.com/cline/cline/issues/14148).
+
+Talky has fixed Option-Space and Option-Escape shortcuts, plus labeled controls.
+Successful shortcut registration does not prove that everyone can use them in every app.
+
+Next check: keyboard-only and VoiceOver tasks, different keyboard layouts, and activation in each supported destination.
+Include feedback from people with limited dexterity before choosing another shortcut scheme.
+
+### Help people find preserved work
+
+A user found that recovery existed, but the failure message did not explain how to reach it.
+See [TypeWhisper #1267](https://github.com/TypeWhisper/typewhisper-mac/issues/1267).
+
+Talky exposes available transcript text, Copy, and interruption status.
+It does not save raw audio for recovery.
+
+Next check: ask a first-time tester to recover a synthetic partial result without instructions.
+Check whether the app explains what was preserved and what was discarded.
+
+### Make corrections practical
+
+A discussion requested spoken punctuation and local corrections.
+Participants also noted that command words can occur in ordinary text.
+See [Handy discussion #1805](https://github.com/cjpais/Handy/discussions/1805).
+
+Talky supports selecting and copying the transcript.
+It has no correction editor or spoken-command parser.
+
+Next check: eight synthetic examples with punctuation, corrections, and literal command words.
+Measure the time and steps needed to finish the text.
+Use those results to decide whether a small review-and-edit flow would help.
+
+## Priorities
+
+First, verify capture, recovery, and delivery.
+Then measure vocabulary, language switching, correction, and activation friction.
+
+The reports above do not justify adding cloud processing, saved raw audio, telemetry, automatic updates, or unconditional replacements by default.
+
+## Feedback from real tasks
 
 No Talky user interviews or observed external-user sessions have been completed.
-The source preview and automated checks cannot establish that real users find the app useful or accessible.
-Do not contact participants or publish their data without separate authorization.
+Automated checks do not tell us whether people find the app useful or accessible.
+Get permission before contacting participants or publishing their data.
 
-Use synthetic text in a separately permitted test environment.
-Include a prose-writing task, technical notes, a long draft, and a keyboard-only task, with more than one locale where local models are available.
-Before instructions, ask the tester to start and stop, find missing permission or local-model information, recover text after blocked delivery, and explain history/clipboard behavior.
-Record whether each task succeeds unaided, the steps and time required, correction effort, unexpected behavior, and the tester's preferred recovery path.
-Collect input method, broad microphone type, OS, locale, and destination app; omit personal dictated content and device/account names.
+Use synthetic text in a test environment the participant has agreed to use.
+Include prose, technical notes, a long draft, and a keyboard-only task.
+Use more than one locale where local models are available.
 
-Keep observed task outcomes separate from reported preferences and proposed fixes.
-Include failed tasks alongside successful ones.
-Prioritize issues that lose work, insert unintended text, prevent activation, or make recovery unclear before adding options.
+Before giving instructions, ask the tester to:
+
+1. Start and stop a capture.
+2. Find information about a missing permission or local model.
+3. Recover text after automatic delivery is blocked.
+4. Explain what history saves and what happens to the clipboard.
+
+Record whether each task succeeds without help.
+Note the steps, time, correction effort, unexpected behavior, and preferred recovery path.
+
+Collect the input method, broad microphone type, OS, locale, and destination app.
+Omit personal dictations and device or account names.
+
+Keep observed results separate from preferences and proposed changes.
+Include failed tasks.
+Fix lost work, unintended insertion, blocked activation, and unclear recovery before adding more options.
 
 ## Release readiness
 
-The published **1.1.0-beta.1 release is a source preview**.
-This checklist also tracks current `main` changes needed before a verified downloadable app.
-These checks were recorded on 7 October 2026 for the source-preview revision.
-Unchecked items remain pending.
+**1.1.0-beta.1 is a source preview.**
+The checklist covers that preview and the work on `main` toward a verified downloadable app.
+It was updated on 7 October 2026.
+See [verification details](docs/VERIFICATION.md) for exact commits, hashes, CI runs, and limits.
 
-Source publication:
+### Source and development checks
 
-- [x] Review the privacy and delivery changes and resolve the identified source findings.
-- [x] Pass the local lifecycle, product, and mocked-script suites: 10, 19, and 17 checks respectively.
-- [x] Audit the locked video dependencies with no reported vulnerabilities in the current snapshot.
-- [x] Build the complete app with standalone Command Line Tools and verify the optimized local bundle's source hash.
-- [x] Review current source, reachable Git history, and app artwork for private data, secrets, and attribution.
-- [x] Confirm MIT licensing and preserve applicable dependency licenses.
-- [x] Update the README and historical video source to describe source builds and the current verification limits.
-- [x] Publish the reviewed source and pass its required automated checks.
-- [x] Retire the historical release from the public download path while preserving its tag and assets in a recoverable draft.
-- [x] Enable private vulnerability reporting and verify the public repository settings after publication.
-- [x] Pass the full Xcode build, logic checks, script checks, and dependency audit in CI.
-- [x] Add a synthetic recognition corpus, evaluator, and scoring/evidence fixture tests without claiming measured accuracy.
-- [x] Add a signed/notarized candidate workflow and tests that reject incomplete exact-artifact acceptance.
-- [x] Pass benchmark evaluator, release-tool, and startup-consumer regression suites: 17, 12, and 8 checks respectively.
+- [x] Review and fix the identified privacy and delivery issues in source.
+- [x] Review current source, reachable history, and artwork for private data, secrets, and attribution.
+- [x] Apply MIT licensing and preserve dependency licenses.
+- [x] Publish the source, contributor guidance, and private vulnerability reporting.
+- [x] Keep the old binary release in a recoverable draft, outside the public download path.
+- [x] Update the README and historical video source to describe the source preview and test limits.
+- [x] Build with standalone Command Line Tools and verify the optimized bundle's source hash.
+- [x] Pass the full Xcode build and all 83 automated checks in CI.
+- [x] Audit the locked video dependencies with no reported vulnerabilities in the checked snapshot.
+- [x] Add a synthetic corpus, evaluator, and tests for scoring and result provenance.
+- [x] Add release tooling that requires signing, notarization, and completed acceptance of the exact final archive.
 
-The local source review included 40 current text files and 29 historical text blobs with no matches for the credential patterns checked.
-No private key, environment-secret file, or transcript-storage path was found among the files prepared for publication.
-The app icon was visually inspected. The historical local demo has silent audio and generated graphics in its source.
-These checks do not certify the old remote DMG, which was not downloaded or inspected.
-The legacy MP4 and GIF have not been rerendered and are not current product evidence.
+### App and distribution checks
 
-Runtime and downloadable app:
-
-- [x] Build the complete app with the documented Xcode toolchain in CI.
-- [x] Launch the optimized ad-hoc test app on macOS 27.0.1 and validate a private read-only readiness result.
-- [x] Pass actual startup checks of the compiled app on macOS 14 and macOS 26 in CI.
-- [x] Check synthetic History display, case-insensitive search, export, and deletion cancellation in an isolated app on macOS 27.0.1.
+- [x] Launch the optimized ad-hoc app on macOS 27.0.1 and validate a private startup probe.
+- [x] Launch the compiled app on macOS 14 and 26 in CI.
+- [x] Check synthetic History display, search, export, deletion cancellation, and Clear search on macOS 27.0.1.
 - [ ] Complete live dictation acceptance on macOS 14 and a current macOS release on Apple Silicon.
-- [ ] Check permission denial and recovery, microphone failure, cancellation, and unsupported local models.
-- [ ] Verify delivery and explicit auto-send in TextEdit, a browser, a code editor, and Terminal.
-- [ ] Verify changed app and changed focused element block automatic delivery.
-- [ ] Verify opt-in storage, migration permissions, retention, and removal of test results.
-- [ ] Run repeated short and long real recognition tests and review transcripts.
-- [ ] Record a reproducible benchmark corpus, locale, hardware, duration, errors, and completion latency before publishing performance numbers.
-- [ ] Review the exact release artifact and any replacement demo for private data, attribution, and current behavior.
-- [ ] Produce a signed, notarized release artifact with checksums and test its installation on a clean machine.
+- [ ] Check permission denial and recovery, microphone failure, cancellation, and unavailable local models.
+- [ ] Check delivery and explicit auto-send in TextEdit, a browser, a code editor, and Terminal.
+- [ ] Check that changing the app or focused field blocks automatic delivery.
+- [ ] Check opt-in storage, migration permissions, retention, and removal of test results in the live app.
+- [ ] Repeat short and long recognition tests and review the transcripts.
+- [ ] Publish benchmark inputs, locale, hardware, duration, errors, and completion latency before making performance claims.
+- [ ] Review the final release archive and any new demo for private data, attribution, and current behavior.
+- [ ] Sign, notarize, and checksum the release, then test installation on a clean machine.
 
-Unsigned and ad-hoc local bundles are described in [BUILD.md](BUILD.md).
-The initial preview commit `4be10fd` passed [CI](https://github.com/Venkat-RJ/lokaah-talky/actions/runs/37579865860), including the full Xcode 26.2 Release build for arm64.
-The source-preview release links the final checked revision and its CI run.
-An earlier optimized preview bundle was launched and its setup, settings, and empty-history screens were observed without granting recording permissions.
-Its Swift source SHA-256 is `f10c149b4ad5d87c93ee7c59a3e3f6fc8f3e60b3da478034ae5a4c04afbdd848`.
-That UI check does not verify recognition, permission recovery, or cross-app delivery.
-The responsive panel build was subsequently launched on macOS 27.0.1 and its setup and scrollable settings controls were observed.
-That UI build's source SHA-256 is `89f05657cfd5d14785622d9ee662fd3d325aa95cb78cd4630a4b3545754fc377`.
-The later read-only startup-probe build also passed an isolated launch check, with source SHA-256 `15d9bd5268f49773fbc4af35d2a648d3ed08f29276f7189208e7a7e308b7858b`.
-Commit `24709bd58a05f3116cc1e38a4ff3f1842bf446d4` passed [CI](https://github.com/Venkat-RJ/lokaah-talky/actions/runs/37583963398): the full Xcode 26.2 arm64 Release build, all 83 automated checks, and the locked dependency audit with zero reported vulnerabilities.
-That workflow launched its exact compiled app on macOS 14.8.9 and 26.6.2, validating per-process read-only probes with the same source hash.
-The same packaging and extraction path was also exercised locally on macOS 27.0.1.
-These checks do not accept recording, permission recovery, automatic delivery, or minimum-OS dictation.
-The History UI was separately exercised with three synthetic JSONL records and one legacy Markdown record in a private data directory and a distinct test bundle identity.
-The tested source hash was `15d9bd5268f49773fbc4af35d2a648d3ed08f29276f7189208e7a7e308b7858b`.
-Case-insensitive search, multiline display, and legacy display passed.
-The actual export dialog produced a file containing each of the four records once, preserving multiline text, with owner-only `0600` permissions and no extended ACL entries.
-The deletion dialog explained its scope; cancelling left all four records available.
-An unmatched search exposed a blank-panel usability defect, addressed by a no-results message and a Clear search button.
-The fixed optimized app was launched with a fresh test identity and the same synthetic records, using source SHA-256 `b07707fd8b90c55fcd22fcd12cd98942e9295cd2fdfebd4a4e8c437f3e81dd1c`.
-The no-results message and accessible Clear search control were observed; clicking it cleared the filter and restored all four entries.
-These isolated UI checks do not verify opt-in persistence, actual deletion, recording, clipboard insertion, permission recovery, or release installation.
-The full Xcode build remains blocked locally by an unaccepted Xcode license. CI has verified the complete Xcode build separately.
-Source publication leaves the incomplete runtime and distribution checks visible.
+Startup and synthetic History checks do not establish live dictation or reliable cross-app paste.
+Local signing does not establish a verified public download.
+The remaining checks need approved app permissions and configured release-signing credentials.
 
 ## Benchmark plan
 
-Use a small, reproducible corpus with ordinary prose, technical names, spoken punctuation, and longer passages with natural pauses.
-[The versioned synthetic corpus and evaluator](test/benchmarks/README.md) provide ten cases for `en-US` and `en-IN`.
-Their fixture tests validate scoring and result provenance checks. Live measurements remain pending.
-Include at least one real microphone environment as well as the synthetic loopback test.
-Measure word error rate against a reviewed reference, missing or duplicated segments, completion latency, and delivery success separately.
-Keep sentence-marker coverage as a diagnostic rather than an accuracy metric.
+The [versioned synthetic corpus](test/benchmarks/README.md) has ten cases for `en-US` and `en-IN`.
+It covers prose, technical names, numbers, spoken punctuation, and longer passages with pauses.
+Its tests verify the evaluator, not recognition accuracy.
 
-Publish synthetic or consented samples, the exact commit and settings, and failed cases alongside successful ones.
-Do not include private user dictations.
+Use repeated loopback runs and at least one real microphone environment.
+Measure word error rate against a reviewed reference.
+Report missing or repeated segments, completion latency, and delivery success separately.
+Use sentence-marker coverage only as a diagnostic.
+
+Publish synthetic or consented samples, exact commits and settings, and failed cases alongside successes.
+Keep private dictations out of shared results.

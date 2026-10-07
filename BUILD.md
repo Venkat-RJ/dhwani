@@ -1,17 +1,16 @@
 # Building Lokaah Talky
 
-## Toolchain and platform
+Build on Apple Silicon with Xcode 26 or newer, or standalone Command Line Tools that support the flags in `build-local.sh`.
+The deployment target is macOS 14.
+A newer SDK does not prove the app works on macOS 14.
+When reporting compatibility, include the OS, toolchain version, and checks you ran.
 
-Use Apple Silicon and either Xcode 26 or newer, or standalone Command Line Tools that support the flags in `build-local.sh`.
-The app's deployment target is macOS 14.
-Using a newer SDK does not prove runtime behavior on macOS 14.
-Record the OS, Xcode version, and checks performed when reporting compatibility.
+## Build with standalone Command Line Tools
 
-## Standalone CLT build
-
-The local builder uses `/Library/Developer/CommandLineTools` by default.
-Set `TALKY_DEVELOPER_DIR` to another configured toolchain directory when needed.
-It uses the selected macOS SDK, snapshots the Swift source, creates the app icon, and packages the app without changing the installed application.
+`build-local.sh` creates a separate app bundle without installing or launching it.
+It uses `/Library/Developer/CommandLineTools` by default.
+Set `TALKY_DEVELOPER_DIR` to use another configured toolchain.
+The script uses that toolchain's macOS SDK, snapshots the Swift source, and packages the executable and icon.
 
 ```bash
 # Debug, with an unsigned executable.
@@ -25,24 +24,24 @@ It uses the selected macOS SDK, snapshots the Swift source, creates the app icon
 ```
 
 The default output is `build/local/Lokaah Talky.app`.
-Use `--output-dir` to choose a separate output directory, including a temporary directory for verification.
-Each bundle records its build method, Debug or Release configuration, and source SHA256 in Info.plist.
-The builder stages the complete bundle before replacing a previous output.
-Compilation or signing errors return failure and preserve the previous build.
+Use `--output-dir` for another directory, including a temporary build for testing.
+Info.plist records the build method, Debug or Release configuration, and source SHA256.
+The script finishes the new bundle before replacing a previous output.
+If compilation or signing fails, it keeps the previous build and returns an error.
 
-Unsigned Apple Silicon executables need signing before launch.
-`--adhoc` signs and verifies the bundle with an ad-hoc identity.
-Local ad-hoc builds can request permissions again after rebuilding.
-Use a stable local identity when you need permission continuity.
+Apple Silicon executables need signing before launch.
+`--adhoc` signs and verifies the bundle for local testing.
+Ad-hoc rebuilds can require new permission grants.
+Use a stable local signing identity to help preserve grants between development builds.
 
-The standalone bundle is separate from Xcode's products.
-`reinstall.sh` consumes only the Xcode Debug product described below, so running it after a standalone build will not install that standalone bundle.
+`reinstall.sh` installs only the Xcode Debug product described below.
+Running it after a standalone build does not install the bundle from `build/local/`.
 
-During the 7 October 2026 review, standalone Debug and Release bundle builds passed with Swift 6.3.2 and the macOS 26.5 SDK.
-The executables encoded a minimum macOS version of 14.0.
-Live operation on macOS 14 remains a separate acceptance check.
+Standalone Debug and Release builds passed during the 7 October 2026 review using Swift 6.3.2 and the macOS 26.5 SDK.
+Their executables specify macOS 14.0 as the minimum version.
+Live dictation on macOS 14 still needs testing.
 
-## Xcode build
+## Build with Xcode
 
 ```bash
 xcodebuild -version
@@ -53,41 +52,46 @@ xcodebuild -project "Lokaah Talky.xcodeproj" \
   CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO build
 ```
 
-This builds an unsigned verification artifact without replacing the installed app.
-The full Xcode build on the review machine exited with code 69 because its license was not accepted.
-`xcodebuild -version` succeeding did not establish that an app could be built.
-Configure that Xcode installation before treating its build as verified, or use the standalone CLT route when that toolchain is already configured.
-The CLT build does not accept a full Xcode license or change the system developer-directory selection.
+This creates an unsigned test build without replacing the installed app.
+Public CI has passed the complete unsigned Xcode build and automated checks.
 
-## Local installation
+On the review machine, the full Xcode build exited with code 69 because its license was not accepted.
+`xcodebuild -version` worked, but the app build remained blocked.
+Configure Xcode separately, or use standalone CLT when that toolchain is already configured.
+The CLT build does not accept the full Xcode license or change the system developer-directory selection.
+
+## Install for local development
+
+These commands change your login keychain, install the app, and launch it.
 
 ```bash
 ./setup-cert.sh
 ./reinstall.sh --build
 ```
 
-The setup script creates the local **Talky Self-Signed** certificate and private key in your login keychain.
+`setup-cert.sh` creates the **Talky Self-Signed** certificate and private key in your login keychain.
 Read the keychain prompt before granting access.
-Keep this identity local and never commit or publish its private key.
-A stable signing identity helps macOS recognize successive development builds.
-Permission grants can still require review after identity, bundle, or system changes.
+Keep the identity local and never commit or publish its private key.
+Stable signing helps macOS recognize later development builds.
+Changes to the identity, bundle, or system can still require new permission grants.
 
-The installer uses this checkout's `build/Build/Products/Debug/Lokaah Talky.app`.
-Running `./reinstall.sh` without `--build` installs its existing build.
-The installer stages and verifies the signed bundle before stopping the running app or replacing the local installation.
-Copy, signing, or launch failure returns a nonzero status; replacement and launch failures restore the previous app when one existed.
-Read its output for the actual installation path.
-The default path is `/Applications/Lokaah Talky.app`.
-`TALKY_DEST_DIR` can select another writable installation directory.
+`reinstall.sh --build` builds and installs this checkout's `build/Build/Products/Debug/Lokaah Talky.app`.
+Run `./reinstall.sh` without `--build` to install that existing build.
+The installer copies and verifies the signed bundle before stopping or replacing the running app.
+Copy, signing, or launch failures return a nonzero status.
+Replacement and launch failures restore the previous app when one existed.
+
+The default destination is `/Applications/Lokaah Talky.app`.
+Set `TALKY_DEST_DIR` to another writable installation directory.
+Check the installer output for the actual path.
 
 Local self-signing is for development.
-It is separate from Developer ID signing, notarization, and a verified public download.
-Do not present an old unsigned DMG as the hardened release.
+A public download needs Developer ID signing, notarization, and testing of the final artifact.
+The historical DMG has not been verified against those release requirements.
 
 ## Architecture
 
-The app source is `Lokaah Talky/LokaahTalkyApp.swift`.
-The bundle identifier is `com.lokaah.talky`.
+The app lives in `Lokaah Talky/LokaahTalkyApp.swift`, with bundle identifier `com.lokaah.talky`.
 
 - `AppDelegate` creates the floating accessory panel and global hotkeys.
 - `RootView` provides the compact widget, transcript, history, and settings controls.
@@ -97,38 +101,37 @@ The bundle identifier is `com.lokaah.talky`.
 - The waveform views display microphone levels.
 
 Keep UI and capture state on the main actor.
-Audio callbacks must use synchronized request access and must not modify actor-isolated state directly.
-Recognition callbacks and delayed work must belong to a specific capture so they cannot finalize a later one.
+Audio callbacks must synchronize request access and leave actor-isolated state to the main actor.
+Bind recognition callbacks and delayed work to the capture that created them, so they cannot finalize a later one.
 
 ## Delivery and storage
 
-Regular dictation always replaces the clipboard with the completed transcript.
-Automatic paste uses Command-V, including for Terminal.
-Accessibility is used to validate the original focused element, not as the primary text-insertion path.
-Recheck the destination before paste and before Return.
-Cancel rather than activate a stale destination.
+Regular dictation replaces the clipboard with the completed transcript.
+Automatic paste uses Command-V, including in Terminal.
+Use Accessibility to check the original focused element; keep Command-V as the main insertion path.
+Recheck the destination before paste and Return.
+Cancel delivery if it changed. Do not activate a stale destination.
 
-Persist transcripts only when the corresponding storage option is enabled.
-The default data directory is `~/.talky/`.
-An absolute `TALKY_DATA_DIR` environment value selects a separate data root for an isolated test process.
-Use mode `0700` for private directories and `0600` for files, including replacements and migration of existing storage.
-Isolated test captures write only their own result files and must not deliver to another app.
+Save transcripts only when the matching storage option is enabled.
+Data defaults to `~/.talky/`.
+Set an absolute `TALKY_DATA_DIR` to use a separate directory for an isolated test process.
+Keep private directories at `0700` and files at `0600`, including replaced or migrated files.
+Isolated test captures write only their own results and must not deliver text to another app.
 
-## Runtime and release checks
+## What a build proves
 
-A successful bundle build verifies compilation and packaging.
-Microphone and Speech Recognition permissions, local-model availability, Accessibility delivery, cancellation, long captures, and minimum-OS operation require live acceptance checks.
-Developer ID signing, notarization, and clean-machine installation remain release gates tracked in [PRODUCT.md](PRODUCT.md#release-readiness).
-Use [the binary release workflow](docs/BINARY-RELEASE.md) to prepare and verify a private candidate after a Developer ID identity and notary profile have been configured.
-It builds an immutable tagged snapshot, checks signing and notarization, then requires completed acceptance evidence for the final archive checksum.
-It never uploads or installs the candidate.
-Public CI has passed the complete unsigned Xcode build and automated checks.
-Use [TESTING.md](TESTING.md) to record the checks actually performed.
+A successful build checks compilation and packaging.
+Permissions, local models, Accessibility delivery, cancellation, long captures, and dictation on macOS 14 need live tests.
+See [TESTING.md](TESTING.md) for the test flow and [PRODUCT.md](PRODUCT.md#release-readiness) for passed and pending checks.
+
+[The binary release workflow](docs/BINARY-RELEASE.md) requires a configured Developer ID identity and notary profile.
+It builds the exact tagged commit, checks signing and notarization, and requires completed test evidence tied to the final archive checksum.
+It prepares a private candidate without uploading or installing it.
+Developer ID signing, notarization, and clean-machine installation remain pending release checks.
 
 ## Optional video tooling
 
-The historical explainer source is in `video/`.
-Its dependencies are pinned together to Remotion 4.0.533.
+The historical explainer source is in `video/`, with dependencies pinned to Remotion 4.0.533.
 Run `npm audit --package-lock-only --ignore-scripts` there to check the locked public dependencies.
 Remotion has its own license.
-The old MP4 and GIF are historical assets and require a new content review before being used as a current product demo.
+Review the old MP4 and GIF again before using them as a demo of the current app.

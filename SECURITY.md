@@ -1,41 +1,53 @@
 # Security policy
 
-The development branch receives security fixes.
-Version `1.1.0-beta.1` is a source preview with runtime and distribution checks still open.
-Historical `v1.0.0` binaries predate the current privacy and delivery changes.
-They are not a verified distribution of the hardened app.
+The `main` branch receives security fixes.
+Version `1.1.0-beta.1` is a source preview.
+Live dictation and binary distribution checks remain open in [PRODUCT.md](PRODUCT.md#release-readiness).
+
+Historical `v1.0.0` binaries predate the current privacy and delivery changes and have not passed the current release checks.
 
 ## Report a vulnerability
 
-Use [GitHub private vulnerability reporting](https://github.com/Venkat-RJ/lokaah-talky/security/advisories/new), enabled for this public repository.
-If that route is unavailable, use the contact details published by [the maintainer](https://github.com/Venkat-RJ).
-Do not put exploit details, transcripts, credentials, or private recordings in a public issue.
+Report vulnerabilities through [GitHub private vulnerability reporting](https://github.com/Venkat-RJ/lokaah-talky/security/advisories/new).
+It is enabled for this public repository.
+If it is unavailable, use the contact details on [the maintainer's profile](https://github.com/Venkat-RJ).
 
-Include the affected commit or release, macOS version, prerequisites, impact, and a minimal reproduction using synthetic data.
-Separate a demonstrated exploit from a dependency advisory or a possible attack path.
-There is no guaranteed response time at this stage.
+Keep exploit details, transcripts, credentials, and private recordings out of public issues.
+Include the affected commit or release, macOS version, prerequisites, impact, and a small reproduction using synthetic data.
+Explain what you reproduced and what remains unconfirmed.
+Identify dependency advisories and possible attack paths separately.
+
+There is no guaranteed response time.
 
 ## Security boundaries
 
-Talky requires on-device recognition.
-Regular dictation replaces the clipboard and can paste into a validated original destination.
-Auto-send can execute or submit that text when explicitly enabled.
-Those paths must preserve cancellation and destination checks.
+Talky requires on-device recognition for the selected language.
+Regular dictation replaces the clipboard.
+Automatic paste requires Accessibility access and checks that the original app and focused text field still match.
+When explicitly enabled, auto-send presses Return after paste and can submit a message or run a terminal command.
+Cancellation and destination checks must apply to these paths.
 
-The command file is intentionally available to trusted processes running as the same user.
-Owner-only file permissions help protect local transcript storage from other accounts.
-They do not isolate it from software already running as its owner.
-Private storage and exports clear extended ACL grants as well as applying owner-only file modes.
-Local history and exports are unencrypted.
+The `talky_cmd` file lets processes running as your user control dictation.
+Use it only with trusted scripts. It is not an authentication boundary.
+
+Owner-only permissions restrict other local accounts' access to transcript storage.
+Software running as your user can still access it.
+Private storage and exports use owner-only file modes and clear extended ACL access grants.
+
+History and exports are unencrypted.
 Exporting to a shared or synchronized folder can create copies outside Talky's storage controls.
 
-History and latest-transcript persistence start off on a fresh installation.
-Upgrades preserve saved choices. Disabling history stops new saves and leaves existing records available for explicit deletion.
-Deleting history does not remove exported files or clear the clipboard.
+History and the latest-transcript file are off on a fresh installation.
+Upgrades preserve saved choices.
+Turning history off stops new saves and leaves existing records available for deletion.
+Deleting history leaves exported files and clipboard contents in place.
 
-Local self-signed builds and signing identities are for development.
-Never attach a private signing key to a report or release.
-Published binaries require separate signing, notarization, and artifact checks.
+## Signing and dependencies
 
-Dependency audit results are a snapshot.
-The optional video toolchain should be updated and audited before using its development server.
+Self-signed builds and signing identities are for local development.
+Keep private signing keys out of reports and releases.
+Public binaries require Developer ID signing, notarization, and checks of the exact release artifact.
+See [the binary release workflow](docs/BINARY-RELEASE.md).
+
+A dependency audit describes the versions checked at that time.
+Update and audit the optional video toolchain before using its development server.
