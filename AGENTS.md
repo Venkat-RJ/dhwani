@@ -3,7 +3,7 @@
 ## Project and writing
 
 Lokaah Talky is an MIT-licensed macOS voice-dictation project.
-The repository is preparing for public release; publication and verified binary distribution are separate steps.
+The public repository is a source preview; verified binary distribution has separate release gates.
 Never use em dashes in new writing.
 Use short paragraphs, clear new lines, and factual claims.
 

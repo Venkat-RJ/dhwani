@@ -26,7 +26,7 @@ Historical marketing files are not proof of current behavior.
 
 The target is **1.1.0-beta.1, a source preview**.
 It is not a verified downloadable app.
-These checks were recorded on 7 October 2026 against the working tree based on `d118cef`.
+These checks were recorded on 7 October 2026 for the source-preview revision.
 Unchecked items remain pending.
 
 Source publication:
@@ -38,10 +38,10 @@ Source publication:
 - [x] Review current source, reachable Git history, and app artwork for private data, secrets, and attribution.
 - [x] Confirm MIT licensing and preserve applicable dependency licenses.
 - [x] Update the README and historical video source to describe source builds and the current verification limits.
-- [ ] Record the final source commit and rerun its required checks.
-- [ ] Retire the historical release from the public download path while preserving its tag and assets.
-- [ ] Enable private vulnerability reporting and verify the public repository settings after publication.
-- [ ] Pass CI on the published commit.
+- [x] Publish the reviewed source and pass its required automated checks.
+- [x] Retire the historical release from the public download path while preserving its tag and assets in a recoverable draft.
+- [x] Enable private vulnerability reporting and verify the public repository settings after publication.
+- [x] Pass the full Xcode build, logic checks, script checks, and dependency audit in CI.
 
 The local source review included 40 current text files and 29 historical text blobs with no matches for the credential patterns checked.
 No private key, environment-secret file, or transcript-storage path was found among the files prepared for publication.
@@ -51,7 +51,7 @@ The legacy MP4 and GIF have not been rerendered and are not current product evid
 
 Runtime and downloadable app:
 
-- [ ] Build the complete app with the documented Xcode toolchain.
+- [x] Build the complete app with the documented Xcode toolchain in CI.
 - [ ] Run the app on macOS 14 and a current macOS release on Apple Silicon.
 - [ ] Check permission denial and recovery, microphone failure, cancellation, and unsupported local models.
 - [ ] Verify delivery and explicit auto-send in TextEdit, a browser, a code editor, and Terminal.
@@ -63,6 +63,8 @@ Runtime and downloadable app:
 - [ ] Produce a signed, notarized release artifact with checksums and test its installation on a clean machine.
 
 Unsigned and ad-hoc local bundles are described in [BUILD.md](BUILD.md).
+The initial preview commit `4be10fd` passed [CI](https://github.com/Venkat-RJ/lokaah-talky/actions/runs/37579865860), including the full Xcode 26.2 Release build for arm64.
+The source-preview release links the final checked revision and its CI run.
 The optimized ad-hoc bundle was launched and its setup, settings, and empty-history screens were observed without granting recording permissions.
 Its Swift source SHA-256 is `f10c149b4ad5d87c93ee7c59a3e3f6fc8f3e60b3da478034ae5a4c04afbdd848`.
 That UI check does not verify recognition, permission recovery, or cross-app delivery.

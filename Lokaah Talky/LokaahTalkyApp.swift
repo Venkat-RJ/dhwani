@@ -1043,7 +1043,7 @@ final class SpeechManager: ObservableObject {
         }
         PanelChrome.dropForPrompt()
         SFSpeechRecognizer.requestAuthorization { [weak self] _ in
-            Task { @MainActor in self?.refreshPermissions() }
+            Task { @MainActor [weak self] in self?.refreshPermissions() }
         }
     }
 
@@ -1053,7 +1053,7 @@ final class SpeechManager: ObservableObject {
         }
         PanelChrome.dropForPrompt()
         AVCaptureDevice.requestAccess(for: .audio) { [weak self] _ in
-            Task { @MainActor in self?.refreshPermissions() }
+            Task { @MainActor [weak self] in self?.refreshPermissions() }
         }
     }
 

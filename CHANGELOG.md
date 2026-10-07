@@ -2,7 +2,7 @@
 
 ## 1.1.0-beta.1 (source preview)
 
-Prepared for an MIT public-source preview.
+MIT public-source preview.
 There is no verified signed and notarized binary for this version.
 Runtime and distribution verification are tracked in [PRODUCT.md](PRODUCT.md).
 
