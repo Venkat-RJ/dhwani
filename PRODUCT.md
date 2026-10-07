@@ -190,6 +190,8 @@ See [verification details](docs/VERIFICATION.md) for exact commits, hashes, CI r
 - [x] Add a synthetic corpus, evaluator, and tests for scoring and result provenance.
 - [x] Add release tooling that requires signing, notarization, and completed acceptance of the exact final archive.
 - [x] Disclose Apple's recognition engine, permission notice, and the limits of source-only privacy checks.
+- [x] Prepare a private unnotarized beta, validate its local signature and archive, and pass 95 automated checks locally.
+- [x] Add current interface screenshots and an early testing guide with a public report form.
 
 ### App and distribution checks
 
@@ -210,7 +212,8 @@ See [verification details](docs/VERIFICATION.md) for exact commits, hashes, CI r
 
 Startup and synthetic History checks do not establish live dictation or reliable cross-app paste.
 Local signing does not establish a verified public download.
-The remaining checks need approved app permissions and configured release-signing credentials.
+The remaining checks need live sessions with approved app permissions on supported Macs.
+The Apple-notarized route also needs Developer ID signing and notarization credentials.
 
 ## Benchmark plan
 

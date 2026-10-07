@@ -4,6 +4,7 @@
 
 Changes on `main` after the source-preview tag:
 
+- Add current interface screenshots, an early testing guide and form, and a contributor code map.
 - Add a no-results message and Clear search button to History.
 - Add a synthetic recognition corpus, evaluator, and tests for scoring and result provenance.
 - Add private startup probes and CI startup checks on macOS 14 and 26.

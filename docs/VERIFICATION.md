@@ -4,6 +4,30 @@ These checks were completed on 7 October 2026.
 Each entry describes what was checked and what the result establishes.
 Live dictation and verified binary distribution remain open in the [release checklist](../PRODUCT.md#release-readiness).
 
+## Unnotarized beta preparation
+
+Local source commit `c9c63b9254b13aeffd60c61b27fe5c5afbc7657b` was packaged as private candidate `v1.1.0-beta.3`, version 1.1.0, build 3.
+All 95 automated checks passed: the six suites below plus 12 checks for the unnotarized beta workflow.
+The 24 release-tooling checks were rerun after correcting the `codesign` certificate-extraction argument in both workflows.
+The correction was also checked with the real macOS signing tool.
+
+The optimized standalone CLT build passed.
+The exact archive passed strict signature verification, signer-certificate matching, hardened-runtime and audio-input entitlement checks, bundle and source inspection, and extraction checks.
+Its SHA-256 is `4e2f1d573f19f3b36430067a12c41c7182e309d969c7ee37ff78e468e6607569`.
+
+Startup passed on macOS 27.0.1 arm64 using the extracted archive.
+A normal Launch Services launch reported the existing Microphone and Speech Recognition grants, an available recognizer, and on-device support.
+Accessibility was not granted.
+The direct subprocess startup check reported Speech Recognition as unauthorized; the normal launch reported it as authorized.
+Neither check requested permissions or recorded audio.
+
+The candidate verifier correctly rejected its incomplete live acceptance record.
+This is a private, locally signed candidate, not a published download or an Apple-notarized release.
+Live capture, paste, permission recovery, privacy observations, macOS 14 acceptance, and clean-Mac installation remain pending.
+The installed app was not replaced by these tests.
+
+[Current interface screenshots](SCREENSHOTS.md) were captured separately without personal data or recording permissions.
+
 ## Build and automated checks
 
 | Revision | Checks completed | Evidence |

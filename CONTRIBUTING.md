@@ -4,6 +4,31 @@ Talky is an MIT-licensed source preview.
 Useful contributions include permission recovery, safe text delivery, local language support, accessibility, and long-capture testing.
 Read [PRODUCT.md](PRODUCT.md) for the scope and remaining checks before proposing a larger feature.
 
+## Choose a focused task
+
+- Test a short dictation session and report exact results through [early testing](docs/EARLY-TESTING.md).
+- Reproduce one permission, focus, or delivery problem with synthetic text and a minimal sequence of steps.
+- Check keyboard navigation and VoiceOver labels on setup, history, and settings.
+- Test an available local language and record the locale, microphone type, and recognition errors without sharing private speech.
+- Improve a build or setup instruction after trying it on your own Mac.
+
+Check existing issues first and describe the task you intend to take on.
+For changes to capture, storage, signing, or delivery, discuss the approach before a larger patch.
+
+## Find the relevant code
+
+| Area | Starting point |
+| --- | --- |
+| Floating panel, views, recognition, delivery, and storage | `Lokaah Talky/LokaahTalkyApp.swift`; see the architecture map in [BUILD.md](BUILD.md#architecture) |
+| Deterministic recognition and product checks | `test/RecognitionLifecycleTests.swift` and `test/ProductCoreTests.swift` |
+| Build, installation, and command tests | Root shell scripts and `test/test-scripts.py` |
+| Candidate packaging and acceptance | `scripts/` and the release tests in `test/` |
+| Recognition benchmark inputs and evaluator | `test/benchmarks/` |
+| Historical marketing video | `video/`; not a current runtime demonstration |
+
+The app currently uses one Swift source file.
+A future split should preserve behavior and update both Xcode and standalone builds, along with the tests that extract source sections.
+
 ## Development workflow
 
 1. Fork or clone [the repository](https://github.com/Venkat-RJ/lokaah-talky).
