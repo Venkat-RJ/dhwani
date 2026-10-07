@@ -39,7 +39,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let size = expanded ? NSSize(width: 380, height: 640) : NSSize(width: 230, height: 64)
         let f = panel.frame
         let origin = NSPoint(x: f.midX - size.width / 2, y: f.midY - size.height / 2)
-        let target = NSRect(origin: origin, size: size)
+        var target = NSRect(origin: origin, size: size)
+        if let visible = (panel.screen ?? NSScreen.main)?.visibleFrame {
+            target = PanelPlacement.constrained(target, to: visible)
+        }
         NSAnimationContext.runAnimationGroup { ctx in
             ctx.duration = 0.22
             panel.animator().setFrame(target, display: true)
@@ -589,6 +592,15 @@ nonisolated struct RecognitionLifecycle {
 // MARK: - Recognition lifecycle core END
 
 // MARK: - Product core BEGIN
+
+nonisolated enum PanelPlacement {
+    static func constrained(_ frame: CGRect, to visible: CGRect) -> CGRect {
+        var result = frame
+        result.origin.x = min(max(frame.minX, visible.minX), max(visible.minX, visible.maxX - frame.width))
+        result.origin.y = min(max(frame.minY, visible.minY), max(visible.minY, visible.maxY - frame.height))
+        return result
+    }
+}
 
 nonisolated enum TalkyStorageError: LocalizedError {
     case unsafePath(String)

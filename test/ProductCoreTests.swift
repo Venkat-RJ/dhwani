@@ -1,5 +1,6 @@
 import Foundation
 import Darwin
+import CoreGraphics
 
 @main
 struct ProductCoreTests {
@@ -27,6 +28,18 @@ struct ProductCoreTests {
         let originalMask = umask(0o022)
         defer { umask(originalMask) }
         let store = TalkyStore(root: temp.appendingPathComponent(".talky"))
+
+        try check("expanded controls stay on the selected display at every screen edge") {
+            let screen = CGRect(x: 100, y: 50, width: 1440, height: 800)
+            for point in [CGPoint(x: 100, y: 50), CGPoint(x: 1540, y: 50), CGPoint(x: 100, y: 850), CGPoint(x: 1540, y: 850)] {
+                let expanded = CGRect(x: point.x - 190, y: point.y - 320, width: 380, height: 640)
+                let placed = PanelPlacement.constrained(expanded, to: screen)
+                try expect(screen.contains(placed))
+                try expect(placed.size == expanded.size)
+            }
+            let centered = CGRect(x: 630, y: 130, width: 380, height: 640)
+            try expect(PanelPlacement.constrained(centered, to: screen) == centered)
+        }
 
         try check("storage is owner-only under umask 022") {
             try store.prepare()

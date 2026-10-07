@@ -8,6 +8,7 @@ Runtime and distribution verification are tracked in [PRODUCT.md](PRODUCT.md).
 
 - Require on-device recognition and explain unavailable local languages.
 - Add settings for language and local vocabulary.
+- Keep the expanded panel within the selected display's usable area.
 - Make history, latest-transcript persistence, and launch at login opt-in.
 - Add searchable history with copy, export, deletion, and retention controls.
 - Apply owner-only storage permissions and clear extended ACL access, including during migration.

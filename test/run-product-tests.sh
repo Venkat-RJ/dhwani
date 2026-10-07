@@ -3,7 +3,7 @@ set -euo pipefail
 talky_root=$(cd "$(dirname "$0")/.." && pwd)
 talky_temp=$(mktemp -d "${TMPDIR:-/tmp}/talky-product-tests.XXXXXX")
 trap 'rm -rf "$talky_temp"' EXIT
-printf 'import Foundation\nimport Darwin\n' > "$talky_temp/ProductCore.swift"
+printf 'import Foundation\nimport Darwin\nimport CoreGraphics\n' > "$talky_temp/ProductCore.swift"
 awk '
     /^\/\/ MARK: - Product core BEGIN$/ { copying = 1; found = 1; next }
     /^\/\/ MARK: - Product core END$/ { copying = 0; ended = 1; next }

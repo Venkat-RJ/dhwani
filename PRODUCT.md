@@ -32,7 +32,7 @@ Unchecked items remain pending.
 Source publication:
 
 - [x] Review the privacy and delivery changes and resolve the identified source findings.
-- [x] Pass the local lifecycle, product, and mocked-script suites: 10, 17, and 17 checks respectively.
+- [x] Pass the local lifecycle, product, and mocked-script suites: 10, 18, and 17 checks respectively.
 - [x] Audit the locked video dependencies with no reported vulnerabilities in the current snapshot.
 - [x] Build the complete app with standalone Command Line Tools and verify the optimized local bundle's source hash.
 - [x] Review current source, reachable Git history, and app artwork for private data, secrets, and attribution.
