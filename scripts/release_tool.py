@@ -172,7 +172,7 @@ def signed_check(app, identity, env):
             "Signed entitlements must contain only the enabled audio-input entitlement.")
     with tempfile.TemporaryDirectory(prefix="talky-certificate-") as temp:
         prefix = str(Path(temp) / "signer")
-        run(["codesign", "--display", "--extract-certificates", prefix, str(app)], env=env)
+        run(["codesign", "--display", "--extract-certificates=" + prefix, str(app)], env=env)
         certificate = Path(prefix + "0")
         require(certificate.is_file() and hashlib.sha1(certificate.read_bytes()).hexdigest().upper() == identity["signingFingerprint"],
                 "The actual signing certificate fingerprint does not match the requested identity.")

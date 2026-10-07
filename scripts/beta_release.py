@@ -31,7 +31,7 @@ def signature_check(app, identity, env):
     release.require(plistlib.loads(raw) == release.ENTITLEMENTS, "Only the audio-input entitlement is permitted.")
     with tempfile.TemporaryDirectory(prefix="talky-beta-certificate-") as temporary:
         prefix = str(Path(temporary) / "signer")
-        release.run(["codesign", "--display", "--extract-certificates", prefix, str(app)], env=env)
+        release.run(["codesign", "--display", "--extract-certificates=" + prefix, str(app)], env=env)
         certificate = Path(prefix + "0")
         release.require(certificate.is_file() and hashlib.sha1(certificate.read_bytes()).hexdigest().upper()
                         == identity["signingFingerprint"], "The actual signing identity does not match this beta.")

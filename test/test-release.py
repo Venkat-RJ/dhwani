@@ -32,7 +32,7 @@ operation = tool
 if tool == "xcrun": operation += ":" + ":".join(args[:2])
 if tool == "codesign":
     operation += ":" + ("sign" if "--sign" in args else "entitlements" if "--entitlements" in args
-                         else "certificate" if "--extract-certificates" in args else "verify" if "--verify" in args else "display")
+                         else "certificate" if any(arg.startswith("--extract-certificates=") for arg in args) else "verify" if "--verify" in args else "display")
 if tool == "ditto": operation += ":" + ("extract" if "-x" in args else "archive")
 if config.get("failure") == operation:
     print("SECRET-NOT-PRINT", file=sys.stderr)
@@ -49,6 +49,8 @@ elif tool == "security":
     elif config.get("identityType") != "missing":
         print('1) ' + config["fingerprint"] + ' "Developer ID Application: Test Fixture (' + config["team"] + ')"')
 elif tool == "codesign":
+    # codesign's optional extraction prefix must use --option=value syntax.
+    assert "--extract-certificates" not in args
     app = pathlib.Path(args[-1])
     if "--sign" in args:
         assert args.index("--sign") < args.index("--options")
@@ -58,8 +60,9 @@ elif tool == "codesign":
         signature = app / "Contents/_CodeSignature"
         signature.mkdir()
         (signature / "CodeResources").write_text("signed")
-    elif "--extract-certificates" in args:
-        pathlib.Path(args[args.index("--extract-certificates") + 1] + "0").write_bytes(
+    elif any(arg.startswith("--extract-certificates=") for arg in args):
+        prefix = next(arg.split("=", 1)[1] for arg in args if arg.startswith("--extract-certificates="))
+        pathlib.Path(prefix + "0").write_bytes(
             b"wrong-certificate" if config.get("wrongCertificate") else b"isolated-test-certificate-not-a-real-key")
     elif "--entitlements" in args:
         sys.stdout.buffer.write(plistlib.dumps(config.get("entitlements", {"com.apple.security.device.audio-input": True})))
