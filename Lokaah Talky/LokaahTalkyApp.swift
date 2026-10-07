@@ -396,7 +396,10 @@ struct RootView: View {
     }
 
     private var historyView: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        let matches = historyItems.filter {
+            historySearch.isEmpty || $0.text.localizedCaseInsensitiveContains(historySearch) || $0.date.localizedCaseInsensitiveContains(historySearch)
+        }
+        return VStack(alignment: .leading, spacing: 10) {
             TextField("Search history", text: $historySearch).textFieldStyle(.roundedBorder)
             HStack {
                 Button("Export") { speech.exportHistory() }.disabled(historyItems.isEmpty)
@@ -408,8 +411,15 @@ struct RootView: View {
                     if historyItems.isEmpty {
                         Text(speech.saveHistory ? "No saved dictations yet." : "History is off. Enable it in Settings if you want to save dictations.")
                             .font(.system(size: 13)).foregroundStyle(.secondary).padding(.vertical, 20)
+                    } else if matches.isEmpty {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("No matching dictations.").font(.system(size: 13)).foregroundStyle(.secondary)
+                            Button("Clear search") { historySearch = "" }
+                                .buttonStyle(.borderless)
+                                .accessibilityHint("Removes the filter and shows all saved dictations.")
+                        }.frame(maxWidth: .infinity, alignment: .leading).padding(.vertical, 20)
                     }
-                    ForEach(historyItems.filter { historySearch.isEmpty || $0.text.localizedCaseInsensitiveContains(historySearch) || $0.date.localizedCaseInsensitiveContains(historySearch) }) { item in
+                    ForEach(matches) { item in
                         VStack(alignment: .leading, spacing: 5) {
                             HStack { Text(item.date + " · " + item.time).font(.system(size: 10)).foregroundStyle(.secondary); Spacer(); Button { speech.copy(item.text) } label: { Image(systemName: "doc.on.doc") }.buttonStyle(.borderless).accessibilityLabel("Copy dictation") }
                             Text(item.text).font(.system(size: 13)).textSelection(.enabled).frame(maxWidth: .infinity, alignment: .leading)

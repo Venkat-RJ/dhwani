@@ -17,6 +17,22 @@ body:
       label: macOS version, hardware, and speech language
     validations:
       required: true
+  - type: dropdown
+    id: workflow
+    attributes:
+      label: Where did the problem happen?
+      options:
+        - Setup or shortcut
+        - Recording or long capture
+        - Recognition, language, or vocabulary
+        - Pasting or recovering text
+        - History or privacy controls
+        - Build, install, or upgrade
+  - type: input
+    id: capture_conditions
+    attributes:
+      label: Capture conditions, if relevant
+      description: "Give approximate speaking duration, time to final text, and microphone type (built-in, USB, Bluetooth, or loopback). Omit personal device names and private dictations."
   - type: textarea
     id: steps
     attributes:
@@ -35,3 +51,13 @@ body:
     attributes:
       label: Redacted diagnostics and checks performed
       description: Explain whether this was a live capture, an isolated test, or source inspection.
+  - type: dropdown
+    id: verification_scope
+    attributes:
+      label: What did you verify?
+      options:
+        - Live app behavior
+        - Isolated recording test
+        - Startup or automated logic checks
+        - Source inspection or build only
+        - Not sure

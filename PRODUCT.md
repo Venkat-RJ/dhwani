@@ -23,6 +23,44 @@ Cross-app accuracy and long-capture reliability require runtime evidence.
 There is no claim of competitive superiority or a published recognition benchmark.
 Historical marketing files are not proof of current behavior.
 
+## Evidence from dictation users
+
+The following primary reports were checked on 7 October 2026.
+They are a small sample from other open-source projects, not Talky bug reports, a survey, or evidence of how common a problem is.
+Some reports are now closed. Their historical observations still define useful validation cases; closure alone does not prove a current defect or fix.
+The priorities below are our interpretation of those reports.
+
+| Need and source | Talky today | Next evidence needed |
+| --- | --- | --- |
+| Keep complete long drafts and identify incomplete output. A reporter compared the same long recording under two settings and obtained very different output lengths. [VoiceInk #853](https://github.com/Beingpax/VoiceInk/issues/853) | Capture-scoped sessions drain before finalization; interruptions retain available text. Full-length live results remain unverified. | Repeat the four-minute corpus three times. Inspect early, middle, and final text, deletion/duplication diagnostics, and completion latency. |
+| Insert the right text while keeping it recoverable. A macOS user reported older clipboard contents appearing instead of speech. A separate user wanted their prior clipboard preserved. [Handy #502](https://github.com/cjpais/Handy/issues/502), [#921](https://github.com/cjpais/Handy/issues/921) | Regular dictation deliberately replaces the clipboard and pastes with Command-V after destination checks. Prior clipboard restoration is not implemented. | Verify actual receiving-app contents under load and changed focus. Validate the clipboard tradeoff with users before adding restoration; a timed restore can race a slow receiver. |
+| Recognize names and technical terms without changing ordinary words indiscriminately. A Portuguese-language user requested contextual vocabulary and cautioned against unconditional replacement. [VoiceInk #862](https://github.com/Beingpax/VoiceInk/issues/862) | Local vocabulary hints are supplied to recognition. Their accuracy benefit has not been measured. | Paired vocabulary-on/off utterances with exact-name scoring and ordinary-word controls. Keep locale and lexical scores visible. |
+| Make language choice predictable. A multilingual user preferred explicit language choice and requested faster workflow switching. [Handy discussion #1534](https://github.com/cjpais/Handy/discussions/1534) | The selected locale is explicit. Frequent switching, Indian English, and code-switching have not been accepted. | Alternate three captures between two locally available languages and record selection steps, output language, and vocabulary behavior. |
+| Explain incomplete setup and recover after an upgrade. A macOS report described hidden onboarding after a microphone prompt and ineffective old Accessibility entries. [Handy #1618](https://github.com/cjpais/Handy/issues/1618) | Explicit permission rows, polling, settings links, stable local signing, and clipboard-only delivery are available. Runtime denial/recovery remains pending. | Fresh setup, returning from System Settings, deny/regrant, and one signed upgrade. Verify the user can continue without granting Accessibility. Do not reset permissions automatically. |
+| Support activation that fits the user and foreground app. One user requested single-key double-tap activation because simultaneous keys were difficult; another report described app-specific global-shortcut interference. [VoiceInk #516](https://github.com/Beingpax/VoiceInk/issues/516), [Cline #14148](https://github.com/cline/cline/issues/14148) | Fixed Option-Space/Option-Escape shortcuts and labeled clickable controls exist. Registration checks do not prove universal usability. | Keyboard-only and VoiceOver tasks, limited-dexterity feedback, multiple keyboard layouts, and activation in each supported destination. Choose any new shortcut scheme from observed needs. |
+| Find preserved work when something fails. A user found recovery existed but the failure banner did not explain how to reach it. [TypeWhisper #1267](https://github.com/TypeWhisper/typewhisper-mac/issues/1267) | Available transcript text, Copy, and interruption status are exposed. Raw recordings are not saved for recovery. | Ask a first-time tester to recover a synthetic partial result without telling them where to look. Explain precisely what was preserved and what was discarded. |
+| Correct speech into usable text without ambiguous command behavior. A discussion requested spoken punctuation and local correction, while participants noted that command words can also be ordinary text. [Handy discussion #1805](https://github.com/cjpais/Handy/discussions/1805) | The transcript can be selected and copied. It has no correction editor or spoken-command parser. | Eight synthetic correction and literal-command examples; measure time and steps to finish. Evaluate a small review/edit flow before a broader command system. |
+
+First priority is dependable capture, recovery, and destination delivery.
+Then measure vocabulary, locale, correction, and activation friction.
+These observations do not justify adding cloud processing, raw-audio persistence, telemetry, automatic updates, or unconditional text replacements by default.
+
+## Task-based feedback
+
+No Talky user interviews or observed external-user sessions have been completed.
+The source preview and automated checks cannot establish that real users find the app useful or accessible.
+Do not contact participants or publish their data without separate authorization.
+
+Use synthetic text in a separately permitted test environment.
+Include a prose-writing task, technical notes, a long draft, and a keyboard-only task, with more than one locale where local models are available.
+Before instructions, ask the tester to start and stop, find missing permission or local-model information, recover text after blocked delivery, and explain history/clipboard behavior.
+Record whether each task succeeds unaided, the steps and time required, correction effort, unexpected behavior, and the tester's preferred recovery path.
+Collect input method, broad microphone type, OS, locale, and destination app; omit personal dictated content and device/account names.
+
+Keep observed task outcomes separate from reported preferences and proposed fixes.
+Include failed tasks alongside successful ones.
+Prioritize issues that lose work, insert unintended text, prevent activation, or make recovery unclear before adding options.
+
 ## Release readiness
 
 The published **1.1.0-beta.1 release is a source preview**.
@@ -58,6 +96,7 @@ Runtime and downloadable app:
 - [x] Build the complete app with the documented Xcode toolchain in CI.
 - [x] Launch the optimized ad-hoc test app on macOS 27.0.1 and validate a private read-only readiness result.
 - [x] Pass actual startup checks of the compiled app on macOS 14 and macOS 26 in CI.
+- [x] Check synthetic History display, case-insensitive search, export, and deletion cancellation in an isolated app on macOS 27.0.1.
 - [ ] Complete live dictation acceptance on macOS 14 and a current macOS release on Apple Silicon.
 - [ ] Check permission denial and recovery, microphone failure, cancellation, and unsupported local models.
 - [ ] Verify delivery and explicit auto-send in TextEdit, a browser, a code editor, and Terminal.
@@ -81,6 +120,15 @@ Commit `24709bd58a05f3116cc1e38a4ff3f1842bf446d4` passed [CI](https://github.com
 That workflow launched its exact compiled app on macOS 14.8.9 and 26.6.2, validating per-process read-only probes with the same source hash.
 The same packaging and extraction path was also exercised locally on macOS 27.0.1.
 These checks do not accept recording, permission recovery, automatic delivery, or minimum-OS dictation.
+The History UI was separately exercised with three synthetic JSONL records and one legacy Markdown record in a private data directory and a distinct test bundle identity.
+The tested source hash was `15d9bd5268f49773fbc4af35d2a648d3ed08f29276f7189208e7a7e308b7858b`.
+Case-insensitive search, multiline display, and legacy display passed.
+The actual export dialog produced a file containing each of the four records once, preserving multiline text, with owner-only `0600` permissions and no extended ACL entries.
+The deletion dialog explained its scope; cancelling left all four records available.
+An unmatched search exposed a blank-panel usability defect, addressed by a no-results message and a Clear search button.
+The fixed optimized app was launched with a fresh test identity and the same synthetic records, using source SHA-256 `b07707fd8b90c55fcd22fcd12cd98942e9295cd2fdfebd4a4e8c437f3e81dd1c`.
+The no-results message and accessible Clear search control were observed; clicking it cleared the filter and restored all four entries.
+These isolated UI checks do not verify opt-in persistence, actual deletion, recording, clipboard insertion, permission recovery, or release installation.
 The full Xcode build remains blocked locally by an unaccepted Xcode license. CI has verified the complete Xcode build separately.
 Source publication leaves the incomplete runtime and distribution checks visible.
 
