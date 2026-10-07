@@ -25,8 +25,8 @@ Historical marketing files are not proof of current behavior.
 
 ## Release readiness
 
-The target is **1.1.0-beta.1, a source preview**.
-It is not a verified downloadable app.
+The published **1.1.0-beta.1 release is a source preview**.
+This checklist also tracks current `main` changes needed before a verified downloadable app.
 These checks were recorded on 7 October 2026 for the source-preview revision.
 Unchecked items remain pending.
 
@@ -57,8 +57,8 @@ Runtime and downloadable app:
 
 - [x] Build the complete app with the documented Xcode toolchain in CI.
 - [x] Launch the optimized ad-hoc test app on macOS 27.0.1 and validate a private read-only readiness result.
-- [ ] Pass actual startup checks of the compiled app on macOS 14 and macOS 26 in CI.
-- [ ] Run the app on macOS 14 and a current macOS release on Apple Silicon.
+- [x] Pass actual startup checks of the compiled app on macOS 14 and macOS 26 in CI.
+- [ ] Complete live dictation acceptance on macOS 14 and a current macOS release on Apple Silicon.
 - [ ] Check permission denial and recovery, microphone failure, cancellation, and unsupported local models.
 - [ ] Verify delivery and explicit auto-send in TextEdit, a browser, a code editor, and Terminal.
 - [ ] Verify changed app and changed focused element block automatic delivery.
@@ -77,6 +77,9 @@ That UI check does not verify recognition, permission recovery, or cross-app del
 The responsive panel build was subsequently launched on macOS 27.0.1 and its setup and scrollable settings controls were observed.
 That UI build's source SHA-256 is `89f05657cfd5d14785622d9ee662fd3d325aa95cb78cd4630a4b3545754fc377`.
 The later read-only startup-probe build also passed an isolated launch check, with source SHA-256 `15d9bd5268f49773fbc4af35d2a648d3ed08f29276f7189208e7a7e308b7858b`.
+Commit `24709bd58a05f3116cc1e38a4ff3f1842bf446d4` passed [CI](https://github.com/Venkat-RJ/lokaah-talky/actions/runs/37583963398): the full Xcode 26.2 arm64 Release build, all 83 automated checks, and the locked dependency audit with zero reported vulnerabilities.
+That workflow launched its exact compiled app on macOS 14.8.9 and 26.6.2, validating per-process read-only probes with the same source hash.
+The same packaging and extraction path was also exercised locally on macOS 27.0.1.
 These checks do not accept recording, permission recovery, automatic delivery, or minimum-OS dictation.
 The full Xcode build remains blocked locally by an unaccepted Xcode license. CI has verified the complete Xcode build separately.
 Source publication leaves the incomplete runtime and distribution checks visible.
