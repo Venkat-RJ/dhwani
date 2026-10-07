@@ -4,6 +4,7 @@
 
 Make voice dictation useful in everyday macOS work.
 Keep recognition on-device and make text delivery predictable.
+Name the recognition provider and explain what the privacy checks establish.
 
 People should be able to write prose, take technical notes, and speak longer drafts.
 They should also be able to use the widget and controls with a keyboard.
@@ -15,7 +16,7 @@ Let people cancel a capture and decide what gets saved.
 
 - A compact floating widget and an expanded transcript view.
 - Option-Space to start or finish, and Option-Escape to cancel.
-- On-device recognition with a selected language and local vocabulary hints.
+- Apple's on-device recognition with a selected language and local vocabulary hints.
 - Clipboard copy and automatic paste when the original app and text field still match.
 - Optional auto-send, history, retention, latest-transcript output, and launch at login.
 - Isolated recording tests and startup probes.
@@ -23,6 +24,10 @@ Let people cancel a capture and decide what gets saved.
 These features are present in source.
 Live recognition, long captures, and cross-app delivery still need acceptance testing.
 There is no published accuracy benchmark or evidence that Talky is better than other dictation apps.
+The current engine remains Apple's Speech framework.
+The [privacy disclosure](docs/PRIVACY.md) distinguishes source configuration, Apple's policies, and unverified runtime network behavior.
+Distribution can use an [unnotarized beta](docs/UNNOTARIZED-BETA.md) with a local signing certificate, or the [Apple-notarized release path](docs/BINARY-RELEASE.md).
+Both require runtime acceptance of the final archive.
 
 ## What users have reported
 
@@ -184,6 +189,7 @@ See [verification details](docs/VERIFICATION.md) for exact commits, hashes, CI r
 - [x] Audit the locked video dependencies with no reported vulnerabilities in the checked snapshot.
 - [x] Add a synthetic corpus, evaluator, and tests for scoring and result provenance.
 - [x] Add release tooling that requires signing, notarization, and completed acceptance of the exact final archive.
+- [x] Disclose Apple's recognition engine, permission notice, and the limits of source-only privacy checks.
 
 ### App and distribution checks
 
@@ -192,13 +198,15 @@ See [verification details](docs/VERIFICATION.md) for exact commits, hashes, CI r
 - [x] Check synthetic History display, search, export, deletion cancellation, and Clear search on macOS 27.0.1.
 - [ ] Complete live dictation acceptance on macOS 14 and a current macOS release on Apple Silicon.
 - [ ] Check permission denial and recovery, microphone failure, cancellation, and unavailable local models.
+- [ ] Test recognition with network access unavailable and inspect runtime network activity from the app and relevant speech services using synthetic audio. Record the environment, process attribution, and limits of the observations.
 - [ ] Check delivery and explicit auto-send in TextEdit, a browser, a code editor, and Terminal.
 - [ ] Check that changing the app or focused field blocks automatic delivery.
 - [ ] Check opt-in storage, migration permissions, retention, and removal of test results in the live app.
 - [ ] Repeat short and long recognition tests and review the transcripts.
 - [ ] Publish benchmark inputs, locale, hardware, duration, errors, and completion latency before making performance claims.
 - [ ] Review the final release archive and any new demo for private data, attribution, and current behavior.
-- [ ] Sign, notarize, and checksum the release, then test installation on a clean machine.
+- [ ] For an unnotarized beta, verify the local signature and checksums and test the app-specific approval flow on a clean Mac.
+- [ ] For an Apple-notarized release, sign with Developer ID, notarize, checksum, and test installation on a clean Mac.
 
 Startup and synthetic History checks do not establish live dictation or reliable cross-app paste.
 Local signing does not establish a verified public download.

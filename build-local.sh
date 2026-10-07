@@ -108,7 +108,7 @@ cat > "$talky_bundle/Contents/Info.plist" <<PLIST
 <key>NSHighResolutionCapable</key><true/>
 <key>NSPrincipalClass</key><string>NSApplication</string>
 <key>NSMicrophoneUsageDescription</key><string>Lokaah Talky uses your microphone for on-device dictation.</string>
-<key>NSSpeechRecognitionUsageDescription</key><string>Lokaah Talky uses on-device speech recognition to convert your voice to text.</string>
+<key>NSSpeechRecognitionUsageDescription</key><string>Lokaah Talky uses Apple's speech engine and requires on-device processing to convert your voice to text.</string>
 <key>TalkyBuildMethod</key><string>local-clt</string>
 <key>TalkyBuildConfiguration</key><string>$talky_configuration</string>
 <key>TalkySourceSHA256</key><string>$talky_source_hash</string>

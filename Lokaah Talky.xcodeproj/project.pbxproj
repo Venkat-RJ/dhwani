@@ -257,7 +257,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Lokaah Talky uses the microphone to transcribe your voice.";
-				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Lokaah Talky uses speech recognition to convert your voice to text.";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Lokaah Talky uses Apple's speech engine and requires on-device processing to convert your voice to text.";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -290,7 +290,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Lokaah Talky uses the microphone to transcribe your voice.";
-				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Lokaah Talky uses speech recognition to convert your voice to text.";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Lokaah Talky uses Apple's speech engine and requires on-device processing to convert your voice to text.";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",

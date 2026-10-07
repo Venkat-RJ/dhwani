@@ -42,6 +42,8 @@ jobs:
         run: python3 -I test/benchmarks/test_benchmark.py
       - name: Release tooling checks
         run: python3 -I test/test-release.py
+      - name: Unnotarized beta tooling checks
+        run: python3 -I test/test-beta-release.py
       - name: Startup consumer checks
         run: python3 -I test/test-startup-smoke.py
       - name: Package test-only startup app

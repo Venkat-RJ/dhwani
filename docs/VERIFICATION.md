@@ -76,6 +76,29 @@ A fresh test build showed both, and Clear search restored the records.
 
 These tests do not verify opt-in persistence, actual deletion, recording, clipboard insertion, permission recovery, or release installation.
 
+## Apple privacy disclosure update
+
+The disclosure update used Swift source SHA-256 `e558d7b98d757f61b275d7ee9f7f733c21c1351422deeb5c8d04b51d2db247c6` from the working tree.
+The recognition lifecycle suite passed 10 checks, product core passed 19, and mocked scripts passed 17.
+The benchmark fixtures passed 17 checks, startup consumer fixtures passed 8, and binary release mocks passed 12.
+All 83 automated checks passed for this source.
+The fixture and mocked checks do not establish live capture, actual notarization, or clean-machine installation.
+The optimized standalone CLT build passed.
+The full unsigned Xcode attempt remained blocked by the unaccepted license, with exit code 69.
+
+The local app was signed with the existing development identity and passed strict signature verification.
+It replaced the installed app only after a fresh probe reported no active capture.
+The relaunched app's probe matched the new source hash and reported the existing Microphone and Speech Recognition grants as authorized.
+This was a local development update, not a notarized binary release.
+
+The installed app's Apple provider label and Settings privacy text were visually checked on macOS 27.0.1.
+Settings displayed the engine disclosure, audit limitation, and Apple policy link.
+The build's Speech Recognition purpose string also named Apple's engine and required on-device processing.
+The system permission dialog was not requested again.
+
+No recording or runtime network audit was performed for this wording update.
+See [the privacy disclosure](PRIVACY.md) for what the source checks establish and what remains unverified.
+
 ## Source publication review
 
 The local review checked 40 current text files and 29 historical text blobs.

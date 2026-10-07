@@ -8,6 +8,8 @@ Changes on `main` after the source-preview tag:
 - Add a synthetic recognition corpus, evaluator, and tests for scoring and result provenance.
 - Add private startup probes and CI startup checks on macOS 14 and 26.
 - Add tooling for a signed, notarized release candidate, with acceptance tied to the final archive.
+- Add a separate unnotarized beta workflow using an existing local signing certificate, with checksums and installation instructions.
+- Explain the Apple speech dependency in the app, permission descriptions, and privacy documentation.
 - Record user reports, test priorities, and completed verification separately.
 
 ## 1.1.0-beta.1 (source preview)

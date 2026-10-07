@@ -260,7 +260,7 @@ struct RootView: View {
             header
             HStack(spacing: 5) {
                 Image(systemName: "lock.shield.fill")
-                Text("On-device · \(speech.languageName)")
+                Text("Apple · On-device · \(speech.languageName)")
             }.font(.system(size: 11)).foregroundStyle(.secondary)
 
             if speech.needsSetup && page == .dictate { ScrollView { setupView } }
@@ -336,8 +336,11 @@ struct RootView: View {
     private var setupView: some View {
         VStack(alignment: .leading, spacing: 18) {
             Text("Welcome to Talky").font(.title3.bold())
-            Text("Allow microphone and speech access to dictate. Recognition stays on this Mac. Accessibility is optional and lets Talky paste for you.")
+            Text("Allow microphone and speech access to dictate. Accessibility is optional and lets Talky paste for you.")
                 .font(.system(size: 13)).foregroundStyle(.secondary)
+            speechPrivacyDisclosure
+            Text("macOS shows Apple's Speech Recognition permission notice. Review it before granting access.")
+                .font(.system(size: 11)).foregroundStyle(.secondary)
             permissionRow("Microphone", description: "Listens only while you record", granted: speech.microphoneAllowed, action: speech.requestMicrophonePermission)
             permissionRow("Speech recognition", description: "Uses Apple's on-device model", granted: speech.speechAllowed, action: speech.requestSpeechPermission)
             permissionRow("Accessibility", description: "Pastes into the original text field", granted: speech.accessibilityAllowed, action: speech.requestAccessibilityPermission)
@@ -345,6 +348,16 @@ struct RootView: View {
                 .font(.system(size: 11)).foregroundStyle(.secondary)
             Button("Check permissions again") { speech.refreshPermissions() }.buttonStyle(.borderless)
         }.padding(.vertical, 12)
+    }
+
+    private var speechPrivacyDisclosure: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text("Talky uses Apple's speech engine and requires on-device processing. Apple provides the engine and language models.")
+            Text("Runtime network activity has not been independently audited.")
+            if let url = URL(string: "https://www.apple.com/legal/privacy/data/en/ask-siri-dictation/") {
+                Link("Apple's speech privacy information", destination: url)
+            }
+        }.font(.system(size: 11)).foregroundStyle(.secondary)
     }
 
     private func permissionRow(_ title: String, description: String, granted: Bool, action: @escaping () -> Void) -> some View {
@@ -373,9 +386,10 @@ struct RootView: View {
                 TextEditor(text: $speech.vocabulary).font(.system(size: 12)).frame(height: 60).disabled(speech.isBusy)
                     .overlay(RoundedRectangle(cornerRadius: 5).stroke(.white.opacity(0.15)))
                     .accessibilityLabel("Vocabulary, one phrase per line")
-                Text("One phrase per line. These hints stay on this Mac.").font(.system(size: 11)).foregroundStyle(.secondary)
+                Text("One phrase per line. Hints are supplied to Apple's on-device recognizer.").font(.system(size: 11)).foregroundStyle(.secondary)
                 Divider()
                 Text("PRIVACY").font(.system(size: 10, weight: .semibold)).foregroundStyle(.secondary)
+                speechPrivacyDisclosure
                 Toggle("Save local history", isOn: $speech.saveHistory)
                 if speech.saveHistory {
                     Picker("Keep history", selection: $speech.historyRetentionDays) {

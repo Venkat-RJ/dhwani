@@ -85,8 +85,10 @@ The default destination is `/Applications/Lokaah Talky.app`.
 Set `TALKY_DEST_DIR` to another writable installation directory.
 Check the installer output for the actual path.
 
-Local self-signing is for development.
-A public download needs Developer ID signing, notarization, and testing of the final artifact.
+Local self-signing does not establish Apple verification.
+An Apple-notarized download needs Developer ID signing, notarization, and testing of the final artifact.
+The [unnotarized beta workflow](docs/UNNOTARIZED-BETA.md) can reuse an existing local certificate without a paid Apple developer membership.
+It requires live acceptance, clean-Mac installation testing, and clear disclosure of the macOS approval step.
 The historical DMG has not been verified against those release requirements.
 
 ## Architecture

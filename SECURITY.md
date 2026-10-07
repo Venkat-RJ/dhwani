@@ -21,7 +21,11 @@ There is no guaranteed response time.
 
 ## Security boundaries
 
-Talky requires on-device recognition for the selected language.
+Talky's source requires on-device recognition for the selected language through Apple's Speech framework.
+The recognition engine and models are supplied by Apple and are proprietary.
+The source checks and Apple's documented API contract do not establish an independent audit of runtime network activity or Apple's broader data handling.
+See [speech recognition and privacy](docs/PRIVACY.md).
+
 Regular dictation replaces the clipboard.
 Automatic paste requires Accessibility access and checks that the original app and focused text field still match.
 When explicitly enabled, auto-send presses Return after paste and can submit a message or run a terminal command.

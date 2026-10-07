@@ -7,13 +7,19 @@ Voice dictation for macOS, in a small floating widget.
 Press **Option-Space**, speak, then press it again to finish.
 Talky copies the transcript to the clipboard and can paste it into the app and text field where you started.
 
-Talky uses Apple's on-device speech recognition.
+Talky uses Apple's system Speech framework and requires on-device recognition.
 It requires a local speech model for the language you select.
+Apple provides the recognition engine and models.
+See [speech recognition and privacy](docs/PRIVACY.md) for the permission notice and verification limits.
 
 The project is MIT licensed and available as a source preview.
 Build it locally for now.
 Live dictation, cross-app paste, and a signed, notarized download still need verification.
 See the [release checklist](PRODUCT.md#release-readiness) and [checks completed so far](docs/VERIFICATION.md).
+
+A [free unnotarized beta workflow](docs/UNNOTARIZED-BETA.md) is available for preparing a test candidate.
+A public beta download still needs live acceptance and clean-Mac installation testing.
+This route includes a macOS approval step described in [the beta installation guide](docs/BETA-INSTALL.md).
 
 ## What it does
 
@@ -66,7 +72,7 @@ Read [BUILD.md](BUILD.md) before running them.
 You can also open `Lokaah Talky.xcodeproj` in Xcode.
 
 Local signing is for development.
-A verified public download has separate [release checks](docs/BINARY-RELEASE.md).
+The [unnotarized beta](docs/UNNOTARIZED-BETA.md) and [Apple-notarized release](docs/BINARY-RELEASE.md) have separate preparation steps and require acceptance of the final app archive.
 
 ## Permissions and everyday use
 
@@ -92,8 +98,14 @@ Enable it only when you want Return sent to the current destination.
 
 ## Privacy and local storage
 
-Talky does not fall back to network recognition.
+Talky's source requires local processing for every recognition request and has no network-recognition fallback.
 It refuses to record if the selected recognizer cannot process speech on-device.
+These checks rely on Apple's documented API behavior.
+Runtime network activity and Apple's broader data handling have not been independently audited.
+
+Talky's source is MIT licensed; Apple's recognition engine is proprietary.
+Read [the privacy disclosure](docs/PRIVACY.md) and the linked Apple policies before granting Speech Recognition access.
+
 Other apps can read clipboard contents, and the receiving app can use text pasted into it.
 
 History, the latest-transcript automation file, and launch at login are **off on a fresh installation**.

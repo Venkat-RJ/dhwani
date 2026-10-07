@@ -1,7 +1,9 @@
-# Preparing a public binary
+# Preparing an Apple-notarized public binary
 
 Talky is currently a public source preview.
 Live dictation acceptance and a verified download remain separate release requirements.
+For a beta without Apple notarization, use the separate [unnotarized beta workflow](UNNOTARIZED-BETA.md).
+The Developer ID and notarization requirements below apply to this Apple-notarized distribution path.
 
 Use this workflow to prepare a private candidate and verify the evidence for the exact archive you intend to publish.
 The scripts do not upload a GitHub release, install or launch the app, grant permissions, or change audio routing.

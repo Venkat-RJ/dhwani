@@ -11,10 +11,13 @@ python3 test/test-scripts.py
 python3 -I test/benchmarks/test_benchmark.py
 python3 -I test/test-startup-smoke.py
 python3 -I test/test-release.py
+python3 -I test/test-beta-release.py
 ```
 
 The unit and product suites check deterministic logic and privacy boundaries.
 The script suite mocks installer, signing, and loopback commands.
+The release suites check immutable source tags, archive contents, signatures, private output, and acceptance records using mocked external tools.
+The [unnotarized beta workflow](docs/UNNOTARIZED-BETA.md) additionally requires recorded offline recognition, network observation, and clean-Mac installation approval.
 Passing these checks does not verify live transcription, Accessibility delivery, or permission dialogs.
 
 CI builds an unsigned app on macOS 15 with Xcode 26.2, runs these suites, and audits the locked video dependencies.
