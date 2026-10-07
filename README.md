@@ -24,6 +24,7 @@ See [release readiness](PRODUCT.md#release-readiness).
 
 Accuracy and reliable capture length depend on the voice, language, microphone, and environment.
 There is no published word-accuracy benchmark yet.
+[The synthetic benchmark corpus and evaluator](test/benchmarks/README.md) are available for reproducible accuracy testing.
 
 ## Build and run
 
@@ -101,6 +102,7 @@ Treat those scripts as trusted software.
 Read [CONTRIBUTING.md](CONTRIBUTING.md) for the development workflow and useful first contributions.
 [BUILD.md](BUILD.md) describes the architecture.
 [PRODUCT.md](PRODUCT.md) records the product scope and release gates.
+[The binary release workflow](docs/BINARY-RELEASE.md) describes preparing and checking a signed, notarized candidate.
 Report security issues through [SECURITY.md](SECURITY.md).
 
 The project source is [MIT licensed](LICENSE), copyright 2026 Lokaah.

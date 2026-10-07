@@ -8,7 +8,6 @@ They are not a verified distribution of the hardened app.
 ## Report a vulnerability
 
 Use [GitHub private vulnerability reporting](https://github.com/Venkat-RJ/lokaah-talky/security/advisories/new), enabled for this public repository.
-Its availability will be checked after public-source publication.
 If that route is unavailable, use the contact details published by [the maintainer](https://github.com/Venkat-RJ).
 Do not put exploit details, transcripts, credentials, or private recordings in a public issue.
 

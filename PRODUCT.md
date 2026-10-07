@@ -17,6 +17,7 @@ Users should be able to cancel, retrieve a transcript, and choose whether anythi
 - Clipboard delivery with automatic paste only to the unchanged original app and focused element.
 - Optional auto-send, history, retention, latest-transcript automation output, and launch at login.
 - Isolated command-driven test captures with per-run result files.
+- Read-only readiness probes for automated app startup checks.
 
 Cross-app accuracy and long-capture reliability require runtime evidence.
 There is no claim of competitive superiority or a published recognition benchmark.
@@ -32,7 +33,7 @@ Unchecked items remain pending.
 Source publication:
 
 - [x] Review the privacy and delivery changes and resolve the identified source findings.
-- [x] Pass the local lifecycle, product, and mocked-script suites: 10, 18, and 17 checks respectively.
+- [x] Pass the local lifecycle, product, and mocked-script suites: 10, 19, and 17 checks respectively.
 - [x] Audit the locked video dependencies with no reported vulnerabilities in the current snapshot.
 - [x] Build the complete app with standalone Command Line Tools and verify the optimized local bundle's source hash.
 - [x] Review current source, reachable Git history, and app artwork for private data, secrets, and attribution.
@@ -42,6 +43,9 @@ Source publication:
 - [x] Retire the historical release from the public download path while preserving its tag and assets in a recoverable draft.
 - [x] Enable private vulnerability reporting and verify the public repository settings after publication.
 - [x] Pass the full Xcode build, logic checks, script checks, and dependency audit in CI.
+- [x] Add a synthetic recognition corpus, evaluator, and scoring/evidence fixture tests without claiming measured accuracy.
+- [x] Add a signed/notarized candidate workflow and tests that reject incomplete exact-artifact acceptance.
+- [x] Pass benchmark evaluator, release-tool, and startup-consumer regression suites: 17, 12, and 8 checks respectively.
 
 The local source review included 40 current text files and 29 historical text blobs with no matches for the credential patterns checked.
 No private key, environment-secret file, or transcript-storage path was found among the files prepared for publication.
@@ -52,6 +56,8 @@ The legacy MP4 and GIF have not been rerendered and are not current product evid
 Runtime and downloadable app:
 
 - [x] Build the complete app with the documented Xcode toolchain in CI.
+- [x] Launch the optimized ad-hoc test app on macOS 27.0.1 and validate a private read-only readiness result.
+- [ ] Pass actual startup checks of the compiled app on macOS 14 and macOS 26 in CI.
 - [ ] Run the app on macOS 14 and a current macOS release on Apple Silicon.
 - [ ] Check permission denial and recovery, microphone failure, cancellation, and unsupported local models.
 - [ ] Verify delivery and explicit auto-send in TextEdit, a browser, a code editor, and Terminal.
@@ -68,13 +74,18 @@ The source-preview release links the final checked revision and its CI run.
 An earlier optimized preview bundle was launched and its setup, settings, and empty-history screens were observed without granting recording permissions.
 Its Swift source SHA-256 is `f10c149b4ad5d87c93ee7c59a3e3f6fc8f3e60b3da478034ae5a4c04afbdd848`.
 That UI check does not verify recognition, permission recovery, or cross-app delivery.
-The later responsive panel changes passed geometry checks and compilation. Their live UI check is pending because the review Mac is locked.
+The responsive panel build was subsequently launched on macOS 27.0.1 and its setup and scrollable settings controls were observed.
+That UI build's source SHA-256 is `89f05657cfd5d14785622d9ee662fd3d325aa95cb78cd4630a4b3545754fc377`.
+The later read-only startup-probe build also passed an isolated launch check, with source SHA-256 `15d9bd5268f49773fbc4af35d2a648d3ed08f29276f7189208e7a7e308b7858b`.
+These checks do not accept recording, permission recovery, automatic delivery, or minimum-OS dictation.
 The full Xcode build remains blocked locally by an unaccepted Xcode license. CI has verified the complete Xcode build separately.
 Source publication leaves the incomplete runtime and distribution checks visible.
 
 ## Benchmark plan
 
 Use a small, reproducible corpus with ordinary prose, technical names, spoken punctuation, and longer passages with natural pauses.
+[The versioned synthetic corpus and evaluator](test/benchmarks/README.md) provide ten cases for `en-US` and `en-IN`.
+Their fixture tests validate scoring and result provenance checks. Live measurements remain pending.
 Include at least one real microphone environment as well as the synthetic loopback test.
 Measure word error rate against a reviewed reference, missing or duplicated segments, completion latency, and delivery success separately.
 Keep sentence-marker coverage as a diagnostic rather than an accuracy metric.

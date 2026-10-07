@@ -1,0 +1,318 @@
+{
+  "schema_version": 1,
+  "version": "1.0.0",
+  "license": "MIT",
+  "provenance": "Project-authored synthetic text. People, budgets, and workshop events are fictional. No user dictations or speaker recordings are included.",
+  "cases": [
+    {
+      "id": "en-us-prose-01",
+      "locale": "en-US",
+      "category": "ordinary_prose",
+      "suggested_speech_rate_wpm": 160,
+      "vocabulary": [],
+      "segments": [
+        {
+          "id": "s01",
+          "reference": "Tomorrow morning, Mira will review the draft with the small project team. The goal is to make the instructions clear enough for a new reader to follow without asking for help.",
+          "spoken": "Tomorrow morning, Mira will review the draft with the small project team. The goal is to make the instructions clear enough for a new reader to follow without asking for help.",
+          "pause_after_ms": 600
+        },
+        {
+          "id": "s02",
+          "reference": "Keep the useful examples, remove repeated sentences, and explain every unexpected result. After lunch, we can test the revised notes and decide which questions still need an answer.",
+          "spoken": "Keep the useful examples, remove repeated sentences, and explain every unexpected result. After lunch, we can test the revised notes and decide which questions still need an answer.",
+          "pause_after_ms": 600
+        }
+      ]
+    },
+    {
+      "id": "en-in-prose-01",
+      "locale": "en-IN",
+      "category": "ordinary_prose",
+      "suggested_speech_rate_wpm": 160,
+      "vocabulary": [],
+      "segments": [
+        {
+          "id": "s01",
+          "reference": "The Bengaluru team will organise a short review after the morning meeting. Please bring the latest notes, explain the open questions, and leave enough time for everyone to suggest a practical change.",
+          "spoken": "The Bengaluru team will organise a short review after the morning meeting. Please bring the latest notes, explain the open questions, and leave enough time for everyone to suggest a practical change.",
+          "pause_after_ms": 600
+        },
+        {
+          "id": "s02",
+          "reference": "We should finalise the plan before lunch and send the colour samples to the design centre. The next discussion will focus on the remaining work rather than repeating decisions that are already recorded.",
+          "spoken": "We should finalise the plan before lunch and send the colour samples to the design centre. The next discussion will focus on the remaining work rather than repeating decisions that are already recorded.",
+          "pause_after_ms": 600
+        }
+      ]
+    },
+    {
+      "id": "en-us-technical-01",
+      "locale": "en-US",
+      "category": "technical_names",
+      "suggested_speech_rate_wpm": 160,
+      "vocabulary": [
+        "SwiftUI",
+        "AVAudioEngine",
+        "SFSpeechRecognizer",
+        "NSLock",
+        "PostgreSQL",
+        "Kubernetes",
+        "OpenTelemetry",
+        "GitHub Actions",
+        "SHA256",
+        "UUID"
+      ],
+      "segments": [
+        {
+          "id": "s01",
+          "reference": "SwiftUI renders the floating panel, while AVAudioEngine supplies audio buffers to SFSpeechRecognizer. NSLock protects the current recognition request when a new session replaces the old one.",
+          "spoken": "SwiftUI renders the floating panel, while AVAudioEngine supplies audio buffers to SFSpeechRecognizer. NSLock protects the current recognition request when a new session replaces the old one.",
+          "pause_after_ms": 600
+        },
+        {
+          "id": "s02",
+          "reference": "The debugging notes mention PostgreSQL, Kubernetes, OpenTelemetry, and GitHub Actions. Keep the JSON result, the SHA256 source hash, and the run UUID together so another engineer can inspect the same evidence.",
+          "spoken": "The debugging notes mention PostgreSQL, Kubernetes, OpenTelemetry, and GitHub Actions. Keep the JSON result, the SHA256 source hash, and the run UUID together so another engineer can inspect the same evidence.",
+          "pause_after_ms": 600
+        }
+      ]
+    },
+    {
+      "id": "en-in-technical-01",
+      "locale": "en-IN",
+      "category": "technical_names",
+      "suggested_speech_rate_wpm": 160,
+      "vocabulary": [
+        "Chennai",
+        "FastAPI",
+        "PyTorch",
+        "PostgreSQL",
+        "NSLock",
+        "Kubernetes",
+        "JSON"
+      ],
+      "segments": [
+        {
+          "id": "s01",
+          "reference": "The Chennai engineering group uses Python, FastAPI, PyTorch, and PostgreSQL for the sample service. The retrieval evaluation compares embeddings, reranking, and a small synthetic question set.",
+          "spoken": "The Chennai engineering group uses Python, FastAPI, PyTorch, and PostgreSQL for the sample service. The retrieval evaluation compares embeddings, reranking, and a small synthetic question set.",
+          "pause_after_ms": 600
+        },
+        {
+          "id": "s02",
+          "reference": "Please explain the difference between a recognition callback and a microphone interruption. Check the JSON schema, the NSLock boundary, and the Kubernetes deployment notes before we finalise the review.",
+          "spoken": "Please explain the difference between a recognition callback and a microphone interruption. Check the JSON schema, the NSLock boundary, and the Kubernetes deployment notes before we finalise the review.",
+          "pause_after_ms": 600
+        }
+      ]
+    },
+    {
+      "id": "en-us-punctuation-01",
+      "locale": "en-US",
+      "category": "spoken_punctuation",
+      "suggested_speech_rate_wpm": 160,
+      "vocabulary": [],
+      "segments": [
+        {
+          "id": "s01",
+          "reference": "Today: build, test, and review. Is the result ready? Yes; keep the final notes!",
+          "spoken": "Today colon build comma test comma and review period Is the result ready question mark Yes semicolon keep the final notes exclamation mark",
+          "pause_after_ms": 600
+        },
+        {
+          "id": "s02",
+          "reference": "Mira, please check the draft. Then send the summary: clear steps, useful examples, and open questions.",
+          "spoken": "Mira comma please check the draft period Then send the summary colon clear steps comma useful examples comma and open questions period",
+          "pause_after_ms": 600
+        }
+      ]
+    },
+    {
+      "id": "en-in-punctuation-01",
+      "locale": "en-IN",
+      "category": "spoken_punctuation",
+      "suggested_speech_rate_wpm": 160,
+      "vocabulary": [
+        "Chennai"
+      ],
+      "segments": [
+        {
+          "id": "s01",
+          "reference": "Please review three items: the local model, the clipboard, and the history settings.",
+          "spoken": "Please review three items colon the local model comma the clipboard comma and the history settings period",
+          "pause_after_ms": 600
+        },
+        {
+          "id": "s02",
+          "reference": "Has the Chennai review finished? Yes, it has. Keep the final notes; we can discuss the remaining questions tomorrow!",
+          "spoken": "Has the Chennai review finished question mark Yes comma it has period Keep the final notes semicolon we can discuss the remaining questions tomorrow exclamation mark",
+          "pause_after_ms": 600
+        }
+      ]
+    },
+    {
+      "id": "en-us-numbers-01",
+      "locale": "en-US",
+      "category": "number_formats",
+      "suggested_speech_rate_wpm": 160,
+      "vocabulary": [],
+      "segments": [
+        {
+          "id": "s01",
+          "reference": "The synthetic budget is 1,200,000 dollars, and the sample contains 42 records. Schedule the review at 9:30 AM and reserve 25 minutes for questions.",
+          "spoken": "The synthetic budget is one million two hundred thousand dollars and the sample contains forty two records. Schedule the review at nine thirty A M and reserve twenty five minutes for questions.",
+          "pause_after_ms": 600
+        },
+        {
+          "id": "s02",
+          "reference": "Version 3.2 remains a decimal expression. Keep the minus sign in the phrase minus five, and do not confuse fifteen with fifty.",
+          "spoken": "Version three point two remains a decimal expression. Keep the minus sign in the phrase minus five and do not confuse fifteen with fifty.",
+          "pause_after_ms": 600
+        }
+      ]
+    },
+    {
+      "id": "en-in-numbers-01",
+      "locale": "en-IN",
+      "category": "number_formats",
+      "suggested_speech_rate_wpm": 160,
+      "vocabulary": [],
+      "segments": [
+        {
+          "id": "s01",
+          "reference": "The synthetic budget is 12,00,000 rupees, and the sample contains 42 records. The next milestone needs 2,50,000 rupees. Schedule the review at 9:30 AM.",
+          "spoken": "The synthetic budget is twelve lakh rupees and the sample contains forty two records. The next milestone needs two lakh fifty thousand rupees. Schedule the review at nine thirty A M.",
+          "pause_after_ms": 600
+        },
+        {
+          "id": "s02",
+          "reference": "The larger example uses 3,00,00,000 rupees. Say the amount clearly, preserve the unit, and check the difference between fifteen and fifty before finalising the note.",
+          "spoken": "The larger example uses three crore rupees. Say the amount clearly preserve the unit and check the difference between fifteen and fifty before finalising the note.",
+          "pause_after_ms": 600
+        }
+      ]
+    },
+    {
+      "id": "en-us-long-01",
+      "locale": "en-US",
+      "category": "long_passage",
+      "suggested_speech_rate_wpm": 160,
+      "vocabulary": [
+        "Mira",
+        "Dev"
+      ],
+      "segments": [
+        {
+          "id": "s01",
+          "reference": "At the start of the workshop, the group agreed to describe the problem before suggesting a solution. Mira opened a blank notebook and wrote the first question in plain language. Everyone then read the same short example and explained what they expected to happen. The answers were similar, but several people noticed a missing assumption. The team added that assumption to the notes, checked it against the original goal, and agreed to revisit it if later evidence showed a different result.",
+          "spoken": "At the start of the workshop, the group agreed to describe the problem before suggesting a solution. Mira opened a blank notebook and wrote the first question in plain language. Everyone then read the same short example and explained what they expected to happen. The answers were similar, but several people noticed a missing assumption. The team added that assumption to the notes, checked it against the original goal, and agreed to revisit it if later evidence showed a different result.",
+          "pause_after_ms": 900
+        },
+        {
+          "id": "s02",
+          "reference": "The second discussion focused on recording a useful experiment. Dev proposed changing one variable at a time, keeping the source version fixed, and writing down the environment before the test began. A colleague asked how to handle an interrupted run. They decided to keep failed attempts alongside successful ones, explain the reason for each interruption, and avoid treating an incomplete result as a clean measurement. This made the report longer, but it also made the conclusions easier for another person to assess.",
+          "spoken": "The second discussion focused on recording a useful experiment. Dev proposed changing one variable at a time, keeping the source version fixed, and writing down the environment before the test began. A colleague asked how to handle an interrupted run. They decided to keep failed attempts alongside successful ones, explain the reason for each interruption, and avoid treating an incomplete result as a clean measurement. This made the report longer, but it also made the conclusions easier for another person to assess.",
+          "pause_after_ms": 900
+        },
+        {
+          "id": "s03",
+          "reference": "Next, the group reviewed a sample transcript with a missing middle paragraph. The beginning and ending sounded reasonable when read alone, so a quick review had overlooked the gap. They compared the output with the full reference and marked the words that were absent. Then they checked whether any earlier phrase had appeared twice. The exercise showed why a readable summary and a complete transcription require different checks. A transcript can sound polished while still leaving out an important condition or repeating a previous instruction.",
+          "spoken": "Next, the group reviewed a sample transcript with a missing middle paragraph. The beginning and ending sounded reasonable when read alone, so a quick review had overlooked the gap. They compared the output with the full reference and marked the words that were absent. Then they checked whether any earlier phrase had appeared twice. The exercise showed why a readable summary and a complete transcription require different checks. A transcript can sound polished while still leaving out an important condition or repeating a previous instruction.",
+          "pause_after_ms": 900
+        },
+        {
+          "id": "s04",
+          "reference": "After a short pause, the team moved to the language examples. The first passage contained ordinary prose, while the next one included technical names and several numbers. They used the same speech rate and recorded the voice identifier for the synthetic sample. The reviewer kept the original reference beside the normalized score so spelling differences remained visible. No one tried to hide an unfamiliar name by adding it as an automatic correction. They also reported punctuation separately because a misplaced mark can change how a sentence is understood.",
+          "spoken": "After a short pause, the team moved to the language examples. The first passage contained ordinary prose, while the next one included technical names and several numbers. They used the same speech rate and recorded the voice identifier for the synthetic sample. The reviewer kept the original reference beside the normalized score so spelling differences remained visible. No one tried to hide an unfamiliar name by adding it as an automatic correction. They also reported punctuation separately because a misplaced mark can change how a sentence is understood.",
+          "pause_after_ms": 900
+        },
+        {
+          "id": "s05",
+          "reference": "During the fifth discussion, the group considered how the text would reach another application. A correct transcript was only one part of the workflow. The destination needed to remain the same, and the user needed a clear way to cancel before anything was sent. They tested the idea with harmless draft text rather than a live command. When focus moved, the proposed behavior kept the words available for manual copying. This gave the user a useful result without assuming that the old destination was still appropriate.",
+          "spoken": "During the fifth discussion, the group considered how the text would reach another application. A correct transcript was only one part of the workflow. The destination needed to remain the same, and the user needed a clear way to cancel before anything was sent. They tested the idea with harmless draft text rather than a live command. When focus moved, the proposed behavior kept the words available for manual copying. This gave the user a useful result without assuming that the old destination was still appropriate.",
+          "pause_after_ms": 900
+        },
+        {
+          "id": "s06",
+          "reference": "The sixth section covered local history and shared evidence. The group chose synthetic examples for public reports and kept real dictations outside the repository. They distinguished an optional history file from a test result that existed only for one recorded run. Each report would identify the source hash, locale, microphone, operating system, and timing information. If a field was missing, the report would say so. These details did not make the result automatically trustworthy, but they gave reviewers enough information to repeat the same experiment and inspect its limits.",
+          "spoken": "The sixth section covered local history and shared evidence. The group chose synthetic examples for public reports and kept real dictations outside the repository. They distinguished an optional history file from a test result that existed only for one recorded run. Each report would identify the source hash, locale, microphone, operating system, and timing information. If a field was missing, the report would say so. These details did not make the result automatically trustworthy, but they gave reviewers enough information to repeat the same experiment and inspect its limits.",
+          "pause_after_ms": 900
+        },
+        {
+          "id": "s07",
+          "reference": "Before the final review, the team read the long passage again from the beginning. They looked for transitions that were too abrupt, sentences that repeated the same point, and words that could be replaced with clearer language. A natural pause separated each section so the recording could exercise session renewal during a longer capture. The reviewer checked the early, middle, and late portions independently. This prevented a strong ending from distracting attention from a missing phrase near the start or an unexpected duplication in the middle of the draft.",
+          "spoken": "Before the final review, the team read the long passage again from the beginning. They looked for transitions that were too abrupt, sentences that repeated the same point, and words that could be replaced with clearer language. A natural pause separated each section so the recording could exercise session renewal during a longer capture. The reviewer checked the early, middle, and late portions independently. This prevented a strong ending from distracting attention from a missing phrase near the start or an unexpected duplication in the middle of the draft.",
+          "pause_after_ms": 900
+        },
+        {
+          "id": "s08",
+          "reference": "At the end of the workshop, Mira listed the remaining questions and assigned a practical next step to each one. The group had a clearer document and a more useful measurement plan, but it had not yet proved live recognition accuracy. They would need repeated microphone runs, several speaking styles, and a careful review of the failures before making that claim. For now, the report described what had been tested, what remained uncertain, and which evidence would help resolve the uncertainty. Everyone agreed that this was enough information to begin the next experiment responsibly.",
+          "spoken": "At the end of the workshop, Mira listed the remaining questions and assigned a practical next step to each one. The group had a clearer document and a more useful measurement plan, but it had not yet proved live recognition accuracy. They would need repeated microphone runs, several speaking styles, and a careful review of the failures before making that claim. For now, the report described what had been tested, what remained uncertain, and which evidence would help resolve the uncertainty. Everyone agreed that this was enough information to begin the next experiment responsibly.",
+          "pause_after_ms": 900
+        }
+      ]
+    },
+    {
+      "id": "en-in-long-01",
+      "locale": "en-IN",
+      "category": "long_passage",
+      "suggested_speech_rate_wpm": 160,
+      "vocabulary": [
+        "Mira",
+        "Dev",
+        "Bengaluru"
+      ],
+      "segments": [
+        {
+          "id": "s01",
+          "reference": "At the start of the workshop, the group agreed to describe the problem before suggesting a solution. Mira opened a blank notebook and wrote the first question in plain language. Everyone then read the same short example and explained what they expected to happen. The answers were similar, but several people noticed a missing assumption. The team added that assumption to the notes, checked it against the original goal, and agreed to revisit it if later evidence showed a different result.",
+          "spoken": "At the start of the workshop, the group agreed to describe the problem before suggesting a solution. Mira opened a blank notebook and wrote the first question in plain language. Everyone then read the same short example and explained what they expected to happen. The answers were similar, but several people noticed a missing assumption. The team added that assumption to the notes, checked it against the original goal, and agreed to revisit it if later evidence showed a different result.",
+          "pause_after_ms": 900
+        },
+        {
+          "id": "s02",
+          "reference": "The second discussion focused on recording a useful experiment. Dev proposed changing one variable at a time, keeping the source version fixed, and writing down the environment before the test began. A colleague asked how to handle an interrupted run. They decided to keep failed attempts alongside successful ones, explain the reason for each interruption, and avoid treating an incomplete result as a clean measurement. This made the report longer, but it also made the conclusions easier for another person to assess.",
+          "spoken": "The second discussion focused on recording a useful experiment. Dev proposed changing one variable at a time, keeping the source version fixed, and writing down the environment before the test began. A colleague asked how to handle an interrupted run. They decided to keep failed attempts alongside successful ones, explain the reason for each interruption, and avoid treating an incomplete result as a clean measurement. This made the report longer, but it also made the conclusions easier for another person to assess.",
+          "pause_after_ms": 900
+        },
+        {
+          "id": "s03",
+          "reference": "Next, the group reviewed a sample transcript with a missing middle paragraph. The beginning and ending sounded reasonable when read alone, so a quick review had overlooked the gap. They compared the output with the full reference and marked the words that were absent. Then they checked whether any earlier phrase had appeared twice. The exercise showed why a readable summary and a complete transcription require different checks. A transcript can sound polished while still leaving out an important condition or repeating a previous instruction.",
+          "spoken": "Next, the group reviewed a sample transcript with a missing middle paragraph. The beginning and ending sounded reasonable when read alone, so a quick review had overlooked the gap. They compared the output with the full reference and marked the words that were absent. Then they checked whether any earlier phrase had appeared twice. The exercise showed why a readable summary and a complete transcription require different checks. A transcript can sound polished while still leaving out an important condition or repeating a previous instruction.",
+          "pause_after_ms": 900
+        },
+        {
+          "id": "s04",
+          "reference": "After a short pause, the team moved to the language examples. The first passage contained ordinary prose, while the next one included technical names and several numbers. They used the same speech rate and recorded the voice identifier for the synthetic sample. The reviewer kept the original reference beside the normalised score so spelling differences remained visible. No one tried to hide an unfamiliar name by adding it as an automatic correction. They also reported punctuation separately because a misplaced mark can change how a sentence is understood.",
+          "spoken": "After a short pause, the team moved to the language examples. The first passage contained ordinary prose, while the next one included technical names and several numbers. They used the same speech rate and recorded the voice identifier for the synthetic sample. The reviewer kept the original reference beside the normalised score so spelling differences remained visible. No one tried to hide an unfamiliar name by adding it as an automatic correction. They also reported punctuation separately because a misplaced mark can change how a sentence is understood.",
+          "pause_after_ms": 900
+        },
+        {
+          "id": "s05",
+          "reference": "During the fifth discussion, the group considered how the text would reach another application. A correct transcript was only one part of the workflow. The destination needed to remain the same, and the user needed a clear way to cancel before anything was sent. They tested the idea with harmless draft text rather than a live command. When focus moved, the proposed behaviour kept the words available for manual copying. This gave the user a useful result without assuming that the old destination was still appropriate.",
+          "spoken": "During the fifth discussion, the group considered how the text would reach another application. A correct transcript was only one part of the workflow. The destination needed to remain the same, and the user needed a clear way to cancel before anything was sent. They tested the idea with harmless draft text rather than a live command. When focus moved, the proposed behaviour kept the words available for manual copying. This gave the user a useful result without assuming that the old destination was still appropriate.",
+          "pause_after_ms": 900
+        },
+        {
+          "id": "s06",
+          "reference": "The sixth section covered local history and shared evidence. The group chose synthetic examples for public reports and kept real dictations outside the repository. They distinguished an optional history file from a test result that existed only for one recorded run. Each report would identify the source hash, locale, microphone, operating system in Bengaluru, and timing information. If a field was missing, the report would say so. These details did not make the result automatically trustworthy, but they gave reviewers enough information to repeat the same experiment and inspect its limits.",
+          "spoken": "The sixth section covered local history and shared evidence. The group chose synthetic examples for public reports and kept real dictations outside the repository. They distinguished an optional history file from a test result that existed only for one recorded run. Each report would identify the source hash, locale, microphone, operating system in Bengaluru, and timing information. If a field was missing, the report would say so. These details did not make the result automatically trustworthy, but they gave reviewers enough information to repeat the same experiment and inspect its limits.",
+          "pause_after_ms": 900
+        },
+        {
+          "id": "s07",
+          "reference": "Before the final review, the team read the long passage again from the beginning. They looked for transitions that were too abrupt, sentences that repeated the same point, and words that could be replaced with clearer language. A natural pause separated each section so the recording could exercise session renewal during a longer capture. The reviewer checked the early, middle, and late portions independently. This prevented a strong ending from distracting attention from a missing phrase near the start or an unexpected duplication in the middle of the draft.",
+          "spoken": "Before the final review, the team read the long passage again from the beginning. They looked for transitions that were too abrupt, sentences that repeated the same point, and words that could be replaced with clearer language. A natural pause separated each section so the recording could exercise session renewal during a longer capture. The reviewer checked the early, middle, and late portions independently. This prevented a strong ending from distracting attention from a missing phrase near the start or an unexpected duplication in the middle of the draft.",
+          "pause_after_ms": 900
+        },
+        {
+          "id": "s08",
+          "reference": "At the end of the workshop, Mira listed the remaining questions and assigned a practical next step to each one. The group had a clearer document and a more useful measurement plan, but it had not yet proved live recognition accuracy. They would need repeated microphone runs, several speaking styles, and a careful review of the failures before making that claim. For now, the report described what had been tested, what remained uncertain, and which evidence would help resolve the uncertainty. Everyone agreed that this was enough information to begin the next experiment responsibly.",
+          "spoken": "At the end of the workshop, Mira listed the remaining questions and assigned a practical next step to each one. The group had a clearer document and a more useful measurement plan, but it had not yet proved live recognition accuracy. They would need repeated microphone runs, several speaking styles, and a careful review of the failures before making that claim. For now, the report described what had been tested, what remained uncertain, and which evidence would help resolve the uncertainty. Everyone agreed that this was enough information to begin the next experiment responsibly.",
+          "pause_after_ms": 900
+        }
+      ]
+    }
+  ]
+}

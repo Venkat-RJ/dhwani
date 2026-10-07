@@ -815,6 +815,13 @@ nonisolated struct TalkyStore {
         let data = try JSONEncoder().encode(result)
         try write(data, to: dir.appendingPathComponent(result.runID + ".json"))
     }
+
+    func writeReadinessResult(_ result: TalkyReadinessResult) throws {
+        let dir = root.appendingPathComponent("probe-results")
+        try directory(root)
+        try directory(dir)
+        try write(JSONEncoder().encode(result), to: dir.appendingPathComponent(result.runID.uuidString + ".json"))
+    }
 }
 
 nonisolated struct TalkyHistoryRecord: Codable {
@@ -879,6 +886,31 @@ nonisolated struct TalkyTestResult: Codable {
     let startedAt: String
     let finishedAt: String?
     let microphone: String
+}
+
+/// A readiness probe contains no transcript, device name or user settings.
+nonisolated struct TalkyReadinessResult: Codable {
+    let schemaVersion: Int
+    let kind: String
+    let runID: UUID
+    let createdAt: String
+    let processID: Int32
+    let sourceSHA256: String?
+    let gitCommit: String?
+    let buildMethod: String?
+    let version: String
+    let build: String
+    let osMajor: Int
+    let osMinor: Int
+    let osPatch: Int
+    let architecture: String
+    let phase: String
+    let busy: Bool
+    let microphoneAllowed: Bool
+    let speechAllowed: Bool
+    let accessibilityAllowed: Bool
+    let supportsOnDeviceRecognition: Bool
+    let recognizerAvailable: Bool
 }
 
 nonisolated struct DeliverySafety {
@@ -1399,6 +1431,41 @@ final class SpeechManager: ObservableObject {
         catch { statusMessage = "Test output: \(error.localizedDescription)" }
     }
 
+    /// Reading readiness must not start, stop or modify an existing capture.
+    private func writeReadinessProbe(_ id: UUID) throws {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        let info = Bundle.main.infoDictionary ?? [:]
+        let os = ProcessInfo.processInfo.operatingSystemVersion
+        let currentPhase: String
+        switch phase {
+        case .idle: currentPhase = "idle"
+        case .listening: currentPhase = "listening"
+        case .processing: currentPhase = "processing"
+        case .denied: currentPhase = "denied"
+        case .unavailable: currentPhase = "unavailable"
+        }
+        #if arch(arm64)
+        let architecture = "arm64"
+        #else
+        let architecture = "unsupported"
+        #endif
+        let result = TalkyReadinessResult(schemaVersion: 1, kind: "readiness", runID: id,
+            createdAt: formatter.string(from: Date()), processID: ProcessInfo.processInfo.processIdentifier,
+            sourceSHA256: info["TalkySourceSHA256"] as? String, gitCommit: info["TalkyGitCommit"] as? String,
+            buildMethod: info["TalkyBuildMethod"] as? String,
+            version: info["CFBundleShortVersionString"] as? String ?? "unknown",
+            build: info["CFBundleVersion"] as? String ?? "unknown",
+            osMajor: os.majorVersion, osMinor: os.minorVersion, osPatch: os.patchVersion,
+            architecture: architecture, phase: currentPhase, busy: isBusy,
+            microphoneAllowed: AVCaptureDevice.authorizationStatus(for: .audio) == .authorized,
+            speechAllowed: SFSpeechRecognizer.authorizationStatus() == .authorized,
+            accessibilityAllowed: Paster.isTrusted,
+            supportsOnDeviceRecognition: recognizer?.supportsOnDeviceRecognition == true,
+            recognizerAvailable: recognizer?.isAvailable == true)
+        try store.writeReadinessResult(result)
+    }
+
     func startCommandWatcher() {
         do {
             try store.prepare()
@@ -1414,7 +1481,10 @@ final class SpeechManager: ObservableObject {
                 if ticks % 8 == 0 { self.refreshPermissions() }
                 do {
                     guard let command = try self.store.consumeCommand() else { return }
-                    if command.hasPrefix("test-start:"), let id = UUID(uuidString: String(command.dropFirst(11))) {
+                    if command.hasPrefix("test-probe:"), let id = UUID(uuidString: String(command.dropFirst(11))) {
+                        // A failed probe returns no result instead of modifying dictation state.
+                        try? self.writeReadinessProbe(id)
+                    } else if command.hasPrefix("test-start:"), let id = UUID(uuidString: String(command.dropFirst(11))) {
                         self.start(testID: id.uuidString)
                     } else if command.hasPrefix("test-stop:"), let id = UUID(uuidString: String(command.dropFirst(10))), id.uuidString == self.testRunID {
                         self.stop()

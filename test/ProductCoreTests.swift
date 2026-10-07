@@ -166,6 +166,27 @@ struct ProductCoreTests {
             try expect(try mode(file) == 0o600)
             try expect(!manager.fileExists(atPath: store.root.appendingPathComponent("voice_input.txt").path))
         }
+        try check("readiness results use a separate private path with no capture content") {
+            let id = UUID()
+            let result = TalkyReadinessResult(schemaVersion: 1, kind: "readiness", runID: id,
+                createdAt: "2026-10-07T10:00:00.000Z", processID: 1234,
+                sourceSHA256: "source", gitCommit: nil, buildMethod: "local-clt",
+                version: "1.1.0", build: "2", osMajor: 14, osMinor: 0, osPatch: 0,
+                architecture: "arm64", phase: "denied", busy: false, microphoneAllowed: false,
+                speechAllowed: false, accessibilityAllowed: false,
+                supportsOnDeviceRecognition: true, recognizerAvailable: true)
+            try store.writeReadinessResult(result)
+            let dir = store.root.appendingPathComponent("probe-results")
+            let file = dir.appendingPathComponent(id.uuidString + ".json")
+            let encoded = try Data(contentsOf: file)
+            let decoded = try JSONDecoder().decode(TalkyReadinessResult.self, from: encoded)
+            try expect(decoded.runID == id && decoded.kind == "readiness")
+            try expect(try mode(dir) == 0o700 && mode(file) == 0o600)
+            let fields = try JSONSerialization.jsonObject(with: encoded) as! [String: Any]
+            try expect(fields["transcript"] == nil && fields["microphone"] == nil && fields["vocabulary"] == nil)
+            try expect(!manager.fileExists(atPath: store.root.appendingPathComponent("voice_input.txt").path))
+            try expect(try store.loadRecords().isEmpty)
+        }
         try check("export strips inherited access before writing private history") {
             let dir = temp.appendingPathComponent("export")
             try manager.createDirectory(at: dir, withIntermediateDirectories: false)
