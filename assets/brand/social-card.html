@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dhwani social card</title>
+  <style>
+    * { box-sizing: border-box; }
+    html, body { width: 1200px; height: 630px; margin: 0; }
+    body {
+      background: #101610;
+      color: #f2f4ec;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-synthesis: none;
+    }
+    .card { width: 1200px; height: 630px; position: relative; padding: 58px 64px; }
+    header { display: flex; align-items: center; justify-content: space-between; }
+    .name { font-size: 38px; font-weight: 700; letter-spacing: -.04em; }
+    .beta {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 16px; font-weight: 650; letter-spacing: .11em; color: #beff78;
+      border: 1px solid #3b5031; border-radius: 24px; padding: 12px 18px;
+    }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: #beff78; }
+    h1 {
+      position: absolute; left: 64px; top: 188px; margin: 0;
+      font-size: 92px; line-height: 1.01; letter-spacing: -.06em; font-weight: 650;
+    }
+    h1 span { color: #beff78; }
+    .description {
+      position: absolute; left: 68px; top: 412px; margin: 0;
+      font-size: 26px; line-height: 1.4; color: #b1bdaf; letter-spacing: -.02em;
+    }
+    .icon {
+      position: absolute; right: 64px; top: 171px;
+      width: 338px; height: 338px; border-radius: 32px;
+    }
+    footer {
+      position: absolute; bottom: 51px; left: 64px; right: 64px;
+      border-top: 1px solid #344035; padding-top: 25px;
+      display: flex; align-items: center; justify-content: space-between;
+      font-size: 19px; color: #b1bdaf;
+    }
+    .platform { color: #f2f4ec; }
+  </style>
+</head>
+<body>
+  <main class="card" aria-label="Dhwani social sharing card">
+    <header><div class="name">Dhwani</div><div class="beta"><span class="dot"></span>EARLY BETA</div></header>
+    <h1>Voice typing.<br><span>For your Mac.</span></h1>
+    <p class="description">Speak. Turn your words into text.</p>
+    <img class="icon" src="../icon.png" width="338" height="338" alt="A person speaking through sound waves to a computer">
+    <footer><span class="platform">Apple Silicon Macs · MIT-licensed source</span><span>venkat-rj.github.io/dhwani</span></footer>
+  </main>
+</body>
+</html>

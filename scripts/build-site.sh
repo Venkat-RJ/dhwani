@@ -8,13 +8,14 @@ mkdir -p "$talky_site_output/assets"
 cp "$talky_site_root/site/index.html" "$talky_site_root/site/styles.css" "$talky_site_output/"
 cp "$talky_site_root/assets/icon.png" "$talky_site_root/assets/setup-current.jpg" "$talky_site_output/assets/"
 cp "$talky_site_root/assets/logo-80.png" "$talky_site_root/assets/favicon-16.png" "$talky_site_root/assets/favicon-32.png" "$talky_site_output/assets/"
+cp "$talky_site_root/assets/og-dhwani-v1.jpg" "$talky_site_output/assets/"
 touch "$talky_site_output/.nojekyll"
 python3 - "$talky_site_output" <<'PY'
 from pathlib import Path
 import sys
 root = Path(sys.argv[1])
 expected = {"index.html", "styles.css", ".nojekyll", "assets/icon.png", "assets/setup-current.jpg",
-            "assets/logo-80.png", "assets/favicon-16.png", "assets/favicon-32.png"}
+            "assets/logo-80.png", "assets/favicon-16.png", "assets/favicon-32.png", "assets/og-dhwani-v1.jpg"}
 files = set()
 for path in root.rglob("*"):
     if path.is_symlink():

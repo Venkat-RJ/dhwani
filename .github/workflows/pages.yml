@@ -9,6 +9,7 @@ on:
       - 'assets/logo-80.png'
       - 'assets/favicon-16.png'
       - 'assets/favicon-32.png'
+      - 'assets/og-dhwani-*.jpg'
       - 'assets/setup-current.jpg'
       - 'scripts/build-site.sh'
       - '.github/workflows/pages.yml'
