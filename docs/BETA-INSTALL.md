@@ -1,9 +1,9 @@
 # Install the unnotarized Dhwani beta
 
 **No public beta installer has been released yet.**
-Private DMG and ZIP packages were prepared before the rename, under the name **Lokaah Talky**.
-Those older packages retain that name and their original checksums.
-A renamed Dhwani installer has not been released.
+A private **Dhwani** DMG has been prepared for coordinated testing.
+It can be shared with a friend who understands that installation, dictation, and paste still need testing on another Mac.
+Older private packages named **Lokaah Talky** retain their name and original checksums.
 Use the exact filename, version, checksum, and test scope supplied by the maintainer.
 
 This beta is signed with the project's local certificate and has not been notarized by Apple.

@@ -14,3 +14,11 @@ The images contain only the app window, with no desktop or personal work visible
 
 These images establish appearance, not recognition accuracy, live delivery, installation, or privacy behavior.
 The older `assets/demo.gif`, `assets/demo.mp4`, and their video source remain historical material under the former name.
+
+## Website illustration
+
+The website hero is an HTML and CSS illustration of speech becoming text.
+The note uses synthetic example text. The voice strip is part of the illustration, not the app's interface.
+The page labels this visual as an illustration and explains that automatic paste requires Accessibility access.
+It does not establish recognition or delivery behavior.
+The actual setup screenshot is available in the installation section.
