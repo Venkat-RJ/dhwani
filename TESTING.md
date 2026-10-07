@@ -79,7 +79,8 @@ Result files can contain test transcripts and should be deleted when no longer n
 Numbered-sentence coverage measures how many expected sentence markers appear.
 It is not word accuracy, punctuation accuracy, code accuracy, or proof of a gapless recording.
 Claims about long captures need repeated runs and review of the actual transcript.
-Zero coverage, duplicated markers, wrong run tokens, stale timestamps, unexpected microphones, recognition errors, and missing terminal results fail the test.
+Repeated markers count once and cannot raise the coverage score.
+Insufficient unique coverage, wrong run tokens, stale timestamps, unexpected microphones, recognition errors, and missing terminal results fail the test.
 Cleanup stops only the requested test capture before restoring the saved devices.
 
 ## Manual acceptance checks

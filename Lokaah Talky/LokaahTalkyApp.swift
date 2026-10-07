@@ -43,6 +43,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if let visible = (panel.screen ?? NSScreen.main)?.visibleFrame {
             target = PanelPlacement.constrained(target, to: visible)
         }
+        if expanded { speech.expandedPanelSize = target.size }
         NSAnimationContext.runAnimationGroup { ctx in
             ctx.duration = 0.22
             panel.animator().setFrame(target, display: true)
@@ -262,10 +263,10 @@ struct RootView: View {
                 Text("On-device · \(speech.languageName)")
             }.font(.system(size: 11)).foregroundStyle(.secondary)
 
-            if speech.needsSetup && page == .dictate { setupView }
+            if speech.needsSetup && page == .dictate { ScrollView { setupView } }
             else {
                 switch page {
-                case .dictate: dictationView
+                case .dictate: ScrollView { dictationView }
                 case .history: historyView
                 case .settings: settingsView
                 }
@@ -277,7 +278,7 @@ struct RootView: View {
                 .accessibilityLabel("Status: " + speech.statusMessage)
             captureControls
         }
-        .padding(20).frame(width: 380, height: 640)
+        .padding(20).frame(width: speech.expandedPanelSize.width, height: speech.expandedPanelSize.height)
         .background(background)
     }
 
@@ -596,8 +597,10 @@ nonisolated struct RecognitionLifecycle {
 nonisolated enum PanelPlacement {
     static func constrained(_ frame: CGRect, to visible: CGRect) -> CGRect {
         var result = frame
-        result.origin.x = min(max(frame.minX, visible.minX), max(visible.minX, visible.maxX - frame.width))
-        result.origin.y = min(max(frame.minY, visible.minY), max(visible.minY, visible.maxY - frame.height))
+        result.size.width = min(frame.width, max(0, visible.width))
+        result.size.height = min(frame.height, max(0, visible.height))
+        result.origin.x = min(max(frame.minX, visible.minX), max(visible.minX, visible.maxX - result.width))
+        result.origin.y = min(max(frame.minY, visible.minY), max(visible.minY, visible.maxY - result.height))
         return result
     }
 }
@@ -927,6 +930,7 @@ final class SpeechManager: ObservableObject {
     @Published private(set) var statusMessage = "Option-Space to dictate"
     @Published private(set) var audioLevel: CGFloat = 0
     @Published var expanded = false
+    @Published var expandedPanelSize = CGSize(width: 380, height: 640)
     static let barCount = 27
     @Published private(set) var levels: [CGFloat] = Array(repeating: 0, count: barCount)
     @Published private(set) var speechAllowed = false

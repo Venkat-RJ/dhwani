@@ -118,7 +118,8 @@ Isolated test captures write only their own result files and must not deliver to
 
 A successful bundle build verifies compilation and packaging.
 Microphone and Speech Recognition permissions, local-model availability, Accessibility delivery, cancellation, long captures, and minimum-OS operation require live acceptance checks.
-Developer ID signing, notarization, clean-machine installation, and public CI remain release gates tracked in [PRODUCT.md](PRODUCT.md#release-readiness).
+Developer ID signing, notarization, and clean-machine installation remain release gates tracked in [PRODUCT.md](PRODUCT.md#release-readiness).
+Public CI has passed the complete unsigned Xcode build and automated checks.
 Use [TESTING.md](TESTING.md) to record the checks actually performed.
 
 ## Optional video tooling

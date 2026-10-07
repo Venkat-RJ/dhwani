@@ -65,10 +65,11 @@ Runtime and downloadable app:
 Unsigned and ad-hoc local bundles are described in [BUILD.md](BUILD.md).
 The initial preview commit `4be10fd` passed [CI](https://github.com/Venkat-RJ/lokaah-talky/actions/runs/37579865860), including the full Xcode 26.2 Release build for arm64.
 The source-preview release links the final checked revision and its CI run.
-The optimized ad-hoc bundle was launched and its setup, settings, and empty-history screens were observed without granting recording permissions.
+An earlier optimized preview bundle was launched and its setup, settings, and empty-history screens were observed without granting recording permissions.
 Its Swift source SHA-256 is `f10c149b4ad5d87c93ee7c59a3e3f6fc8f3e60b3da478034ae5a4c04afbdd848`.
 That UI check does not verify recognition, permission recovery, or cross-app delivery.
-The full Xcode build remains blocked locally by an unaccepted Xcode license; CI validation is pending.
+The later responsive panel changes passed geometry checks and compilation. Their live UI check is pending because the review Mac is locked.
+The full Xcode build remains blocked locally by an unaccepted Xcode license. CI has verified the complete Xcode build separately.
 Source publication leaves the incomplete runtime and distribution checks visible.
 
 ## Benchmark plan

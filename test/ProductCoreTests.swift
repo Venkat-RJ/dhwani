@@ -39,6 +39,10 @@ struct ProductCoreTests {
             }
             let centered = CGRect(x: 630, y: 130, width: 380, height: 640)
             try expect(PanelPlacement.constrained(centered, to: screen) == centered)
+            let smallScreen = CGRect(x: 0, y: 0, width: 1280, height: 600)
+            let fitted = PanelPlacement.constrained(centered, to: smallScreen)
+            try expect(smallScreen.contains(fitted))
+            try expect(fitted.height == 600 && fitted.width == 380)
         }
 
         try check("storage is owner-only under umask 022") {
