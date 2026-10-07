@@ -15,8 +15,8 @@ import sys
 import tempfile
 import zipfile
 
-APP_NAME = "Lokaah Talky.app"
-EXECUTABLE = "Lokaah Talky"
+APP_NAME = "Dhwani.app"
+EXECUTABLE = "Dhwani"
 BUNDLE_ID = "com.lokaah.talky"
 ENTITLEMENTS = {"com.apple.security.device.audio-input": True}
 RUNTIME_CHECKS = (
@@ -278,7 +278,7 @@ def prepare(args):
             require((source / "build-local.sh").is_file(), "The tagged source has no standalone build script.")
             identity = {
                 "tag": args.tag, "tagObject": tag_object, "sourceCommit": commit,
-                "sourceSHA256": sha256(source / "Lokaah Talky/LokaahTalkyApp.swift"),
+                "sourceSHA256": sha256(source / "Dhwani/DhwaniApp.swift"),
                 "version": args.version, "buildNumber": args.build_number,
                 "teamID": args.team_id, "signingFingerprint": args.identity.upper(),
                 "currentOSMajor": args.current_os_major,
@@ -300,7 +300,7 @@ def prepare(args):
             # codesign creates its signature directory under the private preparation umask.
             distribution_permissions(app)
             signed_check(app, identity, env)
-            filename = f"Lokaah-Talky-{args.tag}-arm64.zip"
+            filename = f"Dhwani-{args.tag}-arm64.zip"
             submitted = work / filename
             run(["ditto", "-c", "-k", "--sequesterRsrc", "--keepParent", str(app), str(submitted)], env=env)
             submitted_sha = sha256(submitted)
@@ -393,10 +393,10 @@ def verify(args):
     require(isinstance(identity, dict) and re.fullmatch(r"[0-9a-f]{40}", identity.get("sourceCommit", "")), "Invalid source identity.")
     require(source_identity(args.repo.resolve(), identity.get("tag", ""), env) == (identity.get("tagObject"), identity["sourceCommit"]),
             "Local release tag no longer identifies the prepared source.")
-    source_bytes = run(["git", "-C", str(args.repo.resolve()), "show", identity["sourceCommit"] + ":Lokaah Talky/LokaahTalkyApp.swift"], env=env)[0]
+    source_bytes = run(["git", "-C", str(args.repo.resolve()), "show", identity["sourceCommit"] + ":Dhwani/DhwaniApp.swift"], env=env)[0]
     require(hashlib.sha256(source_bytes).hexdigest() == identity.get("sourceSHA256"), "Source hash does not match the tagged commit.")
     filename = manifest.get("artifact", "")
-    require(filename == f"Lokaah-Talky-{identity.get('tag')}-arm64.zip" and Path(filename).name == filename, "Invalid artifact name.")
+    require(filename == f"Dhwani-{identity.get('tag')}-arm64.zip" and Path(filename).name == filename, "Invalid artifact name.")
     archive = candidate / filename
     private_check(archive, env)
     require(archive.is_file() and not archive.is_symlink() and sha256(archive) == manifest.get("artifactSHA256"), "Candidate archive changed.")

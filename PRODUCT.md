@@ -23,7 +23,7 @@ Let people cancel a capture and decide what gets saved.
 
 These features are present in source.
 Live recognition, long captures, and cross-app delivery still need acceptance testing.
-There is no published accuracy benchmark or evidence that Talky is better than other dictation apps.
+There is no published accuracy benchmark or evidence that Dhwani is better than other dictation apps.
 The current engine remains Apple's Speech framework.
 The [privacy disclosure](docs/PRIVACY.md) distinguishes source configuration, Apple's policies, and unverified runtime network behavior.
 Distribution can use an [unnotarized beta](docs/UNNOTARIZED-BETA.md) with a local signing certificate, or the [Apple-notarized release path](docs/BINARY-RELEASE.md).
@@ -33,7 +33,7 @@ Both require runtime acceptance of the final archive.
 
 We checked the reports below on 7 October 2026.
 They come from other open-source projects.
-They are individual observations, not Talky bug reports or a survey.
+They are individual observations, not Dhwani bug reports or a survey.
 
 Some reports are closed.
 They still provide useful test cases, but do not establish how common a problem is or whether it remains in the other app.
@@ -44,7 +44,7 @@ The priorities here are our interpretation of those reports.
 A user compared the same long recording under two settings and received very different amounts of text.
 See [VoiceInk #853](https://github.com/Beingpax/VoiceInk/issues/853).
 
-Talky waits for recognition sessions to finish and retains available text after an interruption.
+Dhwani waits for recognition sessions to finish and retains available text after an interruption.
 We have not verified complete long drafts in live tests.
 
 Next check: repeat the four-minute corpus three times.
@@ -56,7 +56,7 @@ One macOS user reported older clipboard text being pasted instead of speech.
 Another wanted the previous clipboard contents preserved.
 See [Handy #502](https://github.com/cjpais/Handy/issues/502) and [#921](https://github.com/cjpais/Handy/issues/921).
 
-Talky replaces the clipboard with regular dictation and uses Command-V after checking the destination.
+Dhwani replaces the clipboard with regular dictation and uses Command-V after checking the destination.
 It does not restore the previous clipboard contents.
 
 Next check: inspect the actual receiving text in several apps, under load and after changing focus.
@@ -68,7 +68,7 @@ A timed restore can run before a slow app reads the transcript.
 A Portuguese-language user requested contextual vocabulary and cautioned against unconditional replacement.
 See [VoiceInk #862](https://github.com/Beingpax/VoiceInk/issues/862).
 
-Talky supplies local vocabulary hints to the recognizer.
+Dhwani supplies local vocabulary hints to the recognizer.
 We have not measured their effect on accuracy.
 
 Next check: compare the same utterances with hints on and off.
@@ -80,7 +80,7 @@ Record the locale and both lexical and locale-normalized scores.
 A multilingual user preferred explicit language choice and wanted faster workflow switching.
 See [Handy discussion #1534](https://github.com/cjpais/Handy/discussions/1534).
 
-Talky shows the selected locale.
+Dhwani shows the selected locale.
 Frequent switching, Indian English, and code-switching still need testing.
 
 Next check: alternate three captures between two locally available languages.
@@ -91,7 +91,7 @@ Record the selected language, output language, vocabulary behavior, and steps ne
 A macOS user reported hidden setup after a microphone prompt and ineffective old Accessibility entries.
 See [Handy #1618](https://github.com/cjpais/Handy/issues/1618).
 
-Talky shows permission rows, checks permissions again, links to System Settings, and supports manual clipboard paste.
+Dhwani shows permission rows, checks permissions again, links to System Settings, and supports manual clipboard paste.
 A stable local signing identity is available for development.
 Live permission denial and recovery are still unverified.
 
@@ -105,7 +105,7 @@ One user requested single-key double-tap activation because simultaneous keys we
 Another reported a foreground app interfering with global shortcuts.
 See [VoiceInk #516](https://github.com/Beingpax/VoiceInk/issues/516) and [Cline #14148](https://github.com/cline/cline/issues/14148).
 
-Talky has fixed Option-Space and Option-Escape shortcuts, plus labeled controls.
+Dhwani has fixed Option-Space and Option-Escape shortcuts, plus labeled controls.
 Successful shortcut registration does not prove that everyone can use them in every app.
 
 Next check: keyboard-only and VoiceOver tasks, different keyboard layouts, and activation in each supported destination.
@@ -116,7 +116,7 @@ Include feedback from people with limited dexterity before choosing another shor
 A user found that recovery existed, but the failure message did not explain how to reach it.
 See [TypeWhisper #1267](https://github.com/TypeWhisper/typewhisper-mac/issues/1267).
 
-Talky exposes available transcript text, Copy, and interruption status.
+Dhwani exposes available transcript text, Copy, and interruption status.
 It does not save raw audio for recovery.
 
 Next check: ask a first-time tester to recover a synthetic partial result without instructions.
@@ -128,7 +128,7 @@ A discussion requested spoken punctuation and local corrections.
 Participants also noted that command words can occur in ordinary text.
 See [Handy discussion #1805](https://github.com/cjpais/Handy/discussions/1805).
 
-Talky supports selecting and copying the transcript.
+Dhwani supports selecting and copying the transcript.
 It has no correction editor or spoken-command parser.
 
 Next check: eight synthetic examples with punctuation, corrections, and literal command words.
@@ -144,7 +144,7 @@ The reports above do not justify adding cloud processing, saved raw audio, telem
 
 ## Feedback from real tasks
 
-No Talky user interviews or observed external-user sessions have been completed.
+No Dhwani user interviews or observed external-user sessions have been completed.
 Automated checks do not tell us whether people find the app useful or accessible.
 Get permission before contacting participants or publishing their data.
 

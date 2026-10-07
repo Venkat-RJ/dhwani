@@ -1,4 +1,4 @@
-# Building Lokaah Talky
+# Building Dhwani
 
 Build on Apple Silicon with Xcode 26 or newer, or standalone Command Line Tools that support the flags in `build-local.sh`.
 The deployment target is macOS 14.
@@ -23,7 +23,7 @@ The script uses that toolchain's macOS SDK, snapshots the Swift source, and pack
 ./build-local.sh --release --adhoc --output-dir build/local
 ```
 
-The default output is `build/local/Lokaah Talky.app`.
+The default output is `build/local/Dhwani.app`.
 Use `--output-dir` for another directory, including a temporary build for testing.
 Info.plist records the build method, Debug or Release configuration, and source SHA256.
 The script finishes the new bundle before replacing a previous output.
@@ -45,8 +45,8 @@ Live dictation on macOS 14 still needs testing.
 
 ```bash
 xcodebuild -version
-xcodebuild -project "Lokaah Talky.xcodeproj" \
-  -scheme "Lokaah Talky" -configuration Release \
+xcodebuild -project "Dhwani.xcodeproj" \
+  -scheme "Dhwani" -configuration Release \
   -destination "generic/platform=macOS" \
   -derivedDataPath build/verification \
   CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO build
@@ -75,13 +75,13 @@ Keep the identity local and never commit or publish its private key.
 Stable signing helps macOS recognize later development builds.
 Changes to the identity, bundle, or system can still require new permission grants.
 
-`reinstall.sh --build` builds and installs this checkout's `build/Build/Products/Debug/Lokaah Talky.app`.
+`reinstall.sh --build` builds and installs this checkout's `build/Build/Products/Debug/Dhwani.app`.
 Run `./reinstall.sh` without `--build` to install that existing build.
 The installer copies and verifies the signed bundle before stopping or replacing the running app.
 Copy, signing, or launch failures return a nonzero status.
 Replacement and launch failures restore the previous app when one existed.
 
-The default destination is `/Applications/Lokaah Talky.app`.
+The default destination is `/Applications/Dhwani.app`.
 Set `TALKY_DEST_DIR` to another writable installation directory.
 Check the installer output for the actual path.
 
@@ -91,9 +91,16 @@ The [unnotarized beta workflow](docs/UNNOTARIZED-BETA.md) can reuse an existing 
 It requires live acceptance, clean-Mac installation testing, and clear disclosure of the macOS approval step.
 The historical DMG has not been verified against those release requirements.
 
+## Rename compatibility
+
+The product and repository are now called Dhwani.
+The bundle identifier, `~/.talky/` data directory, `talky_cmd`, `TALKY_*` environment variables, build-provenance keys, and existing **Talky Self-Signed** identity keep their earlier names.
+This preserves local settings and script compatibility. It does not guarantee that macOS will preserve every permission grant after an update.
+The original MIT copyright notice remains in `LICENSE`.
+
 ## Architecture
 
-The app lives in `Lokaah Talky/LokaahTalkyApp.swift`, with bundle identifier `com.lokaah.talky`.
+The app lives in `Dhwani/DhwaniApp.swift`, with bundle identifier `com.lokaah.talky`.
 
 - `AppDelegate` creates the floating accessory panel and global hotkeys.
 - `RootView` provides the compact widget, transcript, history, and settings controls.

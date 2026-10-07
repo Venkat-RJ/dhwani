@@ -2,13 +2,13 @@
 
 ## Project and writing
 
-Lokaah Talky is an MIT-licensed macOS voice-dictation project.
+Dhwani is an MIT-licensed macOS voice-dictation project.
 The public repository is a source preview; verified binary distribution has separate release gates.
 Never use em dashes in new writing.
 Use short paragraphs, clear new lines, and factual claims.
 
 Read `README.md`, `BUILD.md`, `TESTING.md`, and `PRODUCT.md` before changing behavior.
-App code lives in `Lokaah Talky/LokaahTalkyApp.swift`.
+App code lives in `Dhwani/DhwaniApp.swift`.
 The bundle identifier is `com.lokaah.talky`.
 Target macOS 14 on Apple Silicon with Xcode 26 or newer.
 
@@ -44,6 +44,6 @@ Treat changes to that interface, retention, signing, and text delivery as change
 Do not claim recognition accuracy or reliable capture length from a numbered-sentence coverage score.
 Do not claim a full build, live test, minimum-OS test, signing, or notarization passed unless that exact check passed.
 The files under `assets/demo.*` are historical marketing, not current runtime evidence.
-Use the canonical repository URL `https://github.com/Venkat-RJ/lokaah-talky`.
+Use the canonical repository URL `https://github.com/Venkat-RJ/dhwani`.
 Verify GitHub authentication and effective Git author before commits or pushes.
 Do not rewrite attribution in existing history.

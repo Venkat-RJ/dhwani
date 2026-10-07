@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Prepare synthetic text and evaluate isolated Talky results. Never controls audio."""
+"""Prepare synthetic text and evaluate isolated Dhwani results. Never controls audio."""
 
 import argparse
 import datetime as dt
@@ -199,7 +199,7 @@ def evaluate(case, result, metadata, expected_run_id):
     if metadata.get("case_sha256") is not None and metadata["case_sha256"] != case_hash(case):
         raise ValueError("Metadata refers to a different version of this case")
     if result["phase"] not in ("completed", "failed", "cancelled"):
-        raise ValueError("A terminal Talky result is required")
+        raise ValueError("A terminal Dhwani result is required")
     if not isinstance(result["transcript"], str) or not isinstance(result.get("microphone"), str):
         raise ValueError("Result needs transcript and microphone strings")
     if result.get("error") is not None and not isinstance(result["error"], str):
@@ -321,7 +321,7 @@ def main(argv=None):
     export = sub.add_parser("prepare", help="Export prompts and a metadata template; does not run audio")
     export.add_argument("--case", required=True)
     export.add_argument("--output-dir", required=True)
-    score = sub.add_parser("evaluate", help="Score a terminal isolated Talky result")
+    score = sub.add_parser("evaluate", help="Score a terminal isolated Dhwani result")
     score.add_argument("--case", required=True)
     score.add_argument("--result", required=True)
     score.add_argument("--metadata", required=True)

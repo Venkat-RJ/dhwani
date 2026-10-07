@@ -1,4 +1,4 @@
-# Testing Lokaah Talky
+# Testing Dhwani
 
 ## Start with automated checks
 
@@ -40,9 +40,9 @@ App startup creates an isolated command file; the harness checks that no normal 
 
 ```bash
 ./build-local.sh --release --adhoc --output-dir build/startup-local
-talky_source_hash=$(shasum -a 256 "Lokaah Talky/LokaahTalkyApp.swift" | awk '{print $1}')
+talky_source_hash=$(shasum -a 256 "Dhwani/DhwaniApp.swift" | awk '{print $1}')
 DEVELOPER_DIR=/Library/Developer/CommandLineTools python3 -I test/startup-smoke.py run \
-  --app "$PWD/build/startup-local/Lokaah Talky.app" \
+  --app "$PWD/build/startup-local/Dhwani.app" \
   --source-sha256 "$talky_source_hash" --result build/startup-local/result.json
 ```
 
@@ -70,7 +70,7 @@ To use a separate build and private test directory:
 ```bash
 ./build-local.sh --release --adhoc
 talky_test_dir="$(mktemp -d "${TMPDIR:-/tmp}/talky-loopback.XXXXXX")"
-TALKY_APP_PATH="$PWD/build/local/Lokaah Talky.app" \
+TALKY_APP_PATH="$PWD/build/local/Dhwani.app" \
 TALKY_DATA_DIR="$talky_test_dir" \
 ./test/voice-test.sh --allow-system-changes 40
 ```
@@ -83,7 +83,7 @@ A stale normal transcript cannot pass the test.
 
 | Variable | Default | Purpose |
 | --- | --- | --- |
-| `TALKY_APP_PATH` | `/Applications/Lokaah Talky.app` | App to launch |
+| `TALKY_APP_PATH` | `/Applications/Dhwani.app` | App to launch |
 | `TALKY_DATA_DIR` | `~/.talky` | Absolute data directory passed to the app |
 | `TALKY_MIN_COVERAGE` | `0.95` | Required numbered-sentence coverage |
 | `TALKY_TEST_START_TIMEOUT` | `30` | Seconds to wait for listening |

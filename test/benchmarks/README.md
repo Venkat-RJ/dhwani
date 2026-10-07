@@ -1,14 +1,14 @@
 # Synthetic recognition benchmark
 
-Use these tools to prepare a synthetic test case and score its isolated Talky result file.
+Use these tools to prepare a synthetic test case and score its isolated Dhwani result file.
 This directory contains the corpus, evaluator, and fixture tests.
 It contains no recordings, private dictations, or measured recognition results.
 
 The fixture tests check scoring and evidence validation.
-They do not measure Talky's recognition accuracy.
+They do not measure Dhwani's recognition accuracy.
 
 The Python tools use only the standard library.
-They do not start Talky, play or record audio, change permissions, or select audio devices.
+They do not start Dhwani, play or record audio, change permissions, or select audio devices.
 
 ## Corpus
 
@@ -25,7 +25,7 @@ Use that estimate to plan a run. Actual playback and capture duration must be me
 
 Punctuation cases intentionally speak words such as "comma" and "question mark" while the reference uses the desired marks.
 Keep results where those instructions are not interpreted correctly.
-Technical names and number formats also test difficult inputs; the corpus does not promise that Talky supports their exact syntax.
+Technical names and number formats also test difficult inputs; the corpus does not promise that Dhwani supports their exact syntax.
 
 Inspect and prepare a case:
 
@@ -57,7 +57,7 @@ Restore and verify them after every run, including failed runs.
 The numbered-sentence `voice-test.sh` uses a different corpus.
 Its coverage score does not benchmark recognition of these cases.
 
-1. Select the reference locale in Talky and record the vocabulary hints actually used.
+1. Select the reference locale in Dhwani and record the vocabulary hints actually used.
    Record the tested bundle's source SHA256 and full Git commit.
    Check the bundle itself; the current checkout may differ from the running app.
 2. Copy the metadata template to a separate file for this run.
@@ -155,7 +155,7 @@ Decimals such as `3.2` remain distinct from "three point two" in both views.
 
 Locale normalization can reduce penalties for differences in written format.
 Publish the lexical score beside it so those differences remain visible.
-These are versioned scoring rules. Talky does not apply them to repair a transcript.
+These are versioned scoring rules. Dhwani does not apply them to repair a transcript.
 
 ### Punctuation and exact text
 
@@ -179,7 +179,7 @@ Numbered-sentence coverage does not replace either word-error score.
 ### Completion latency
 
 Completion latency measures the interval from the caller's stop request to the app's final result.
-Talky currently writes timestamps to whole-second precision.
+Dhwani currently writes timestamps to whole-second precision.
 The evaluator uses the precision of both timestamps to report lower and upper bounds.
 It cannot give a millisecond point estimate from a result recorded only to seconds.
 

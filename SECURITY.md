@@ -8,7 +8,7 @@ Historical `v1.0.0` binaries predate the current privacy and delivery changes an
 
 ## Report a vulnerability
 
-Report vulnerabilities through [GitHub private vulnerability reporting](https://github.com/Venkat-RJ/lokaah-talky/security/advisories/new).
+Report vulnerabilities through [GitHub private vulnerability reporting](https://github.com/Venkat-RJ/dhwani/security/advisories/new).
 It is enabled for this public repository.
 If it is unavailable, use the contact details on [the maintainer's profile](https://github.com/Venkat-RJ).
 
@@ -21,7 +21,7 @@ There is no guaranteed response time.
 
 ## Security boundaries
 
-Talky's source requires on-device recognition for the selected language through Apple's Speech framework.
+Dhwani's source requires on-device recognition for the selected language through Apple's Speech framework.
 The recognition engine and models are supplied by Apple and are proprietary.
 The source checks and Apple's documented API contract do not establish an independent audit of runtime network activity or Apple's broader data handling.
 See [speech recognition and privacy](docs/PRIVACY.md).
@@ -39,7 +39,7 @@ Software running as your user can still access it.
 Private storage and exports use owner-only file modes and clear extended ACL access grants.
 
 History and exports are unencrypted.
-Exporting to a shared or synchronized folder can create copies outside Talky's storage controls.
+Exporting to a shared or synchronized folder can create copies outside Dhwani's storage controls.
 
 History and the latest-transcript file are off on a fresh installation.
 Upgrades preserve saved choices.

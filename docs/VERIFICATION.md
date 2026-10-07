@@ -4,6 +4,25 @@ These checks were completed on 7 October 2026.
 Each entry describes what was checked and what the result establishes.
 Live dictation and verified binary distribution remain open in the [release checklist](../PRODUCT.md#release-readiness).
 
+The project was subsequently renamed from Lokaah Talky to Dhwani.
+Historical checks below retain their original hashes and artifact identity.
+They do not establish acceptance of a renamed installer.
+
+## Dhwani rename checks
+
+The renamed source has SHA-256 `d74d23bf031cba0f6ee571179054e6cc8ac596c4139a135683c5445fd43f983e` at `Dhwani/DhwaniApp.swift`.
+The standalone optimized build and strict ad-hoc signature verification passed.
+Its bundle name, display name, executable, and permission purpose strings use Dhwani.
+The bundle identifier remains `com.lokaah.talky` for compatibility.
+
+All 96 automated checks passed: lifecycle 10, product core 19, mocked scripts 18, benchmark evaluator 17, release tooling 12, beta tooling 12, and startup consumer 8.
+The additional installer check verifies that an older named copy blocks installation before either app or any process is changed.
+The full unsigned Xcode build on this Mac remained blocked by the unaccepted Xcode license, exit 69.
+
+A fresh isolated startup probe passed on macOS 27.0.1 arm64 for the renamed executable.
+The compact widget and setup screen were visually checked without recording or granting permissions.
+Historical candidate archives were not rebuilt or renamed and retain their original identity and acceptance limits.
+
 ## Unnotarized beta preparation
 
 Local source commit `c9c63b9254b13aeffd60c61b27fe5c5afbc7657b` was packaged as private candidate `v1.1.0-beta.3`, version 1.1.0, build 3.
@@ -32,9 +51,9 @@ The installed app was not replaced by these tests.
 
 | Revision | Checks completed | Evidence |
 | --- | --- | --- |
-| `4be10fd` | Full Xcode 26.2 Release build for arm64 and the automated checks configured for that preview. | [CI run](https://github.com/Venkat-RJ/lokaah-talky/actions/runs/37579865860) |
-| `24709bd58a05f3116cc1e38a4ff3f1842bf446d4` | Full Xcode 26.2 arm64 Release build, all 83 checks, dependency audit with zero reported vulnerabilities, and actual startup on macOS 14.8.9 and 26.6.2. | [CI run](https://github.com/Venkat-RJ/lokaah-talky/actions/runs/37583963398) |
-| `3d62bd8c8d9de50d226b4d3336d131260bdf3bbf` | Full Xcode build, all 83 checks, dependency audit, and actual startup on macOS 14 and 26 after the History search fix. | [CI run](https://github.com/Venkat-RJ/lokaah-talky/actions/runs/37586930290) |
+| `4be10fd` | Full Xcode 26.2 Release build for arm64 and the automated checks configured for that preview. | [CI run](https://github.com/Venkat-RJ/dhwani/actions/runs/37579865860) |
+| `24709bd58a05f3116cc1e38a4ff3f1842bf446d4` | Full Xcode 26.2 arm64 Release build, all 83 checks, dependency audit with zero reported vulnerabilities, and actual startup on macOS 14.8.9 and 26.6.2. | [CI run](https://github.com/Venkat-RJ/dhwani/actions/runs/37583963398) |
+| `3d62bd8c8d9de50d226b4d3336d131260bdf3bbf` | Full Xcode build, all 83 checks, dependency audit, and actual startup on macOS 14 and 26 after the History search fix. | [CI run](https://github.com/Venkat-RJ/dhwani/actions/runs/37586930290) |
 
 The 83 checks cover:
 

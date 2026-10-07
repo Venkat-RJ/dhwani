@@ -59,7 +59,7 @@ def bundle_info(app):
     with (app / "Contents/Info.plist").open("rb") as stream:
         info = plistlib.load(stream)
     require(info.get("CFBundleIdentifier") == "com.lokaah.talky" and
-            info.get("CFBundleExecutable") == "Lokaah Talky", "Unexpected app bundle identity")
+            info.get("CFBundleExecutable") == "Dhwani", "Unexpected app bundle identity")
     return info
 
 
@@ -105,14 +105,14 @@ def package(args):
     require(re.fullmatch(r"[0-9a-f]{40}", args.commit) is not None, "Expected a full commit SHA")
     repo = Path(__file__).resolve().parents[1]
     source_path = args.source.resolve().relative_to(repo)
-    require(str(source_path) == "Lokaah Talky/LokaahTalkyApp.swift", "Expected this checkout's app source")
+    require(str(source_path) == "Dhwani/DhwaniApp.swift", "Expected this checkout's app source")
     revision = subprocess.run(["git", "-C", str(repo), "show", args.commit + ":" + str(source_path)],
                               capture_output=True)
     require(revision.returncode == 0 and hashlib.sha256(revision.stdout).hexdigest() == source_hash,
             "Source does not match the supplied commit")
     output = args.output.resolve()
     output.mkdir(mode=0o700, parents=True, exist_ok=False)
-    app = output / "Lokaah Talky.app"
+    app = output / "Dhwani.app"
     command("/usr/bin/ditto", str(args.app.resolve()), str(app))
     info_path = app / "Contents/Info.plist"
     info = bundle_info(app)
@@ -142,10 +142,10 @@ def artifact_app(directory, target, expected_commit, expected_source):
         for item in stream.infolist():
             path = Path(item.filename)
             require(not path.is_absolute() and ".." not in path.parts and
-                    path.parts and path.parts[0] == "Lokaah Talky.app", "Unsafe startup archive entry")
+                    path.parts and path.parts[0] == "Dhwani.app", "Unsafe startup archive entry")
             require(not stat.S_ISLNK(item.external_attr >> 16), "Symlink in startup archive")
     command("/usr/bin/ditto", "-x", "-k", str(archive), str(target))
-    app = target / "Lokaah Talky.app"
+    app = target / "Dhwani.app"
     info = bundle_info(app)
     require(digest(app / "Contents/MacOS" / info["CFBundleExecutable"]) == manifest.get("executableSHA256"),
             "Wrong startup executable")

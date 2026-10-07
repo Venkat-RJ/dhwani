@@ -2,7 +2,7 @@
 
 Regular dictation replaces the previous clipboard contents.
 Other apps can read the clipboard, and the destination app handles pasted text under its own policies.
-Deleting Talky history does not clear the clipboard.
+Deleting Dhwani history does not clear the clipboard.
 
 ## What starts off
 
@@ -12,7 +12,7 @@ Auto-send also starts off. Enable it only when you intend to send Return after p
 
 ## History
 
-If you enable history, Talky stores transcripts under `~/.talky/voice_history/`.
+If you enable history, Dhwani stores transcripts under `~/.talky/voice_history/`.
 The files are unencrypted and use owner-only permissions.
 You can keep entries for 1, 7, or 30 days, or until you delete them.
 Retention is checked at startup, when history settings change, and after saving a dictation.
@@ -25,12 +25,12 @@ Deleting history does not remove exported copies or clear the clipboard.
 
 The optional latest-transcript file is `~/.talky/voice_input.txt`.
 Turning that setting off removes the file.
-Scripts running as your user can control Talky through its command file.
+Scripts running as your user can control Dhwani through its command file.
 Use trusted scripts and read [TESTING.md](../TESTING.md) for the interface and isolated test results.
 
 ## Removing the app
 
-Quitting Talky and moving it to Trash removes the app, not its saved history and preferences.
+Quitting Dhwani and moving it to Trash removes the app, not its saved history and preferences.
 Export anything you want to keep before deleting local records.
 Use the app's History controls to delete saved dictations and turn off the latest-transcript setting to remove its output file.
 Exported copies must be managed separately.

@@ -2,7 +2,7 @@
 set -euo pipefail
 
 talky_root=$(cd "$(dirname "$0")/.." && pwd)
-talky_source="${TALKY_TEST_SOURCE:-$talky_root/Lokaah Talky/LokaahTalkyApp.swift}"
+talky_source="${TALKY_TEST_SOURCE:-$talky_root/Dhwani/DhwaniApp.swift}"
 talky_temp=$(mktemp -d "${TMPDIR:-/tmp}/talky-unit-tests.XXXXXX")
 trap 'rm -rf "$talky_temp"' EXIT
 

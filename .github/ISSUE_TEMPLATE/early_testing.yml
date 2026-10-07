@@ -1,10 +1,10 @@
 name: Early testing
-description: Volunteer to test Talky or share a session result using synthetic data.
+description: Volunteer to test Dhwani or share a session result using synthetic data.
 title: "Early testing: "
 body:
   - type: markdown
     attributes:
-      value: "Talky is a source preview with no public app download yet. Read docs/EARLY-TESTING.md. This issue is public: do not include personal dictations, recordings, contact details, or private screenshots. Report vulnerabilities through SECURITY.md."
+      value: "Dhwani is a source preview with no public app download yet. Read docs/EARLY-TESTING.md. This issue is public: do not include personal dictations, recordings, contact details, or private screenshots. Report vulnerabilities through SECURITY.md."
   - type: dropdown
     id: purpose
     attributes:

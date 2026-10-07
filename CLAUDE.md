@@ -1,8 +1,8 @@
-# Lokaah Talky
+# Dhwani
 
 Read **@AGENTS.md** for project instructions, then `BUILD.md`, `TESTING.md`, and `PRODUCT.md`.
 
-The app source is `Lokaah Talky/LokaahTalkyApp.swift`.
+The app source is `Dhwani/DhwaniApp.swift`.
 Use Xcode 26 or newer; the deployment target is macOS 14 on Apple Silicon.
 Preserve local-only recognition, destination checks, cancellation, private storage, and isolated test captures.
 

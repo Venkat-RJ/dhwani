@@ -9,7 +9,7 @@ awk '
     /^\/\/ MARK: - Product core END$/ { copying = 0; ended = 1; next }
     copying { print }
     END { if (!found || !ended) exit 1 }
-' "$talky_root/Lokaah Talky/LokaahTalkyApp.swift" >> "$talky_temp/ProductCore.swift"
+' "$talky_root/Dhwani/DhwaniApp.swift" >> "$talky_temp/ProductCore.swift"
 if [[ -d /Library/Developer/CommandLineTools ]]; then
     export DEVELOPER_DIR="${DEVELOPER_DIR:-/Library/Developer/CommandLineTools}"
 fi

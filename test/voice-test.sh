@@ -1,17 +1,17 @@
 #!/bin/bash
 # Audio-loopback test. Test commands never paste or save normal history.
-# This restarts Talky and temporarily changes the system audio devices.
+# This restarts Dhwani and temporarily changes the system audio devices.
 # Usage: ./test/voice-test.sh --allow-system-changes [sentence_count]
 set -euo pipefail
 umask 077
 
 if [ "${1:-}" != "--allow-system-changes" ] || [ "$#" -gt 2 ]; then
     echo "Usage: $0 --allow-system-changes [sentence_count]" >&2
-    echo "This restarts Talky and temporarily routes system audio through BlackHole." >&2
+    echo "This restarts Dhwani and temporarily routes system audio through BlackHole." >&2
     exit 2
 fi
 N="${2:-40}"
-APP="${TALKY_APP_PATH:-/Applications/Lokaah Talky.app}"
+APP="${TALKY_APP_PATH:-/Applications/Dhwani.app}"
 DATA_DIR="${TALKY_DATA_DIR:-$HOME/.talky}"
 MIN_COVERAGE="${TALKY_MIN_COVERAGE:-0.95}"
 START_TIMEOUT="${TALKY_TEST_START_TIMEOUT:-30}"
@@ -170,7 +170,7 @@ ORIG_OUT="$(SwitchAudioSource -c -t output)"
 [ -n "$ORIG_IN" ] && [ -n "$ORIG_OUT" ] || { echo "Could not read current audio devices." >&2; exit 1; }
 SwitchAudioSource -t input -s "BlackHole 2ch" >/dev/null
 SwitchAudioSource -t output -s "BlackHole 2ch" >/dev/null
-PROCESS_PATTERN='Lokaah Talky[.]app/Contents/MacOS/'
+PROCESS_PATTERN='Dhwani[.]app/Contents/MacOS/'
 if pgrep -f "$PROCESS_PATTERN" >/dev/null; then
     pkill -TERM -f "$PROCESS_PATTERN"
     for ((attempt=0; attempt<30; attempt++)); do
@@ -178,7 +178,7 @@ if pgrep -f "$PROCESS_PATTERN" >/dev/null; then
         sleep 0.1
     done
     if pgrep -f "$PROCESS_PATTERN" >/dev/null; then
-        echo "Talky did not quit. Test cancelled." >&2
+        echo "Dhwani did not quit. Test cancelled." >&2
         exit 1
     fi
 fi

@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101610">
+  <meta name="description" content="Dhwani is voice typing for Apple Silicon Macs. Speak from a floating widget and optionally paste into the original text field. Request the early beta.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Dhwani | Voice typing for your Mac">
+  <meta property="og:description" content="Speak from a floating widget. Keep writing in the app you started in. An MIT-licensed macOS project looking for early testers.">
+  <meta property="og:url" content="https://venkat-rj.github.io/dhwani/">
+  <meta property="og:image" content="https://venkat-rj.github.io/dhwani/assets/icon.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="canonical" href="https://venkat-rj.github.io/dhwani/">
+  <link rel="icon" href="assets/icon.png" type="image/png">
+  <link rel="stylesheet" href="styles.css">
+  <title>Dhwani | Voice typing for your Mac</title>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <div class="shell">
+    <header class="site-header">
+      <a class="brand" href="./" aria-label="Dhwani home">
+        <img src="assets/icon.png" width="40" height="40" alt="">
+        <span><strong>Dhwani</strong></span>
+      </a>
+      <nav aria-label="Main navigation">
+        <a href="#how-it-works">How it works</a>
+        <a href="#privacy">Privacy</a>
+        <a class="source-link" href="https://github.com/Venkat-RJ/dhwani">Source <span aria-hidden="true">↗</span></a>
+      </nav>
+    </header>
+
+    <main id="main">
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="hero-copy">
+          <p class="eyebrow"><span class="status-dot" aria-hidden="true"></span> EARLY BETA · APPLE SILICON</p>
+          <h1 id="hero-title">Voice typing.<br><span>For your Mac.</span></h1>
+          <p class="hero-description">Speak from a small floating widget. Dhwani turns your words into text and can paste them into the field where you started.</p>
+          <a class="button primary" href="https://github.com/Venkat-RJ/dhwani/issues/new?template=early_testing.yml">Request early beta <span aria-hidden="true">↗</span></a>
+          <p class="availability">Private DMG for coordinated testing.<br><strong>No public download yet.</strong> Requests use GitHub.</p>
+          <div class="shortcut"><kbd>⌥</kbd><kbd>Space</kbd><span>Start. Speak. Press again to finish.</span></div>
+        </div>
+        <figure class="app-preview">
+          <div class="preview-top"><span class="window-dots" aria-hidden="true"><i></i><i></i><i></i></span><span>The current app</span></div>
+          <img class="setup-image" src="assets/setup-current.jpg" width="760" height="1280" alt="Dhwani's setup screen showing the Apple speech disclosure and Microphone, Speech Recognition, and optional Accessibility permissions">
+          <figcaption>Actual setup screen, before permissions are granted. <a href="https://github.com/Venkat-RJ/dhwani/blob/main/docs/SCREENSHOTS.md">Capture details</a></figcaption>
+        </figure>
+      </section>
+
+      <section class="workflow section" id="how-it-works" aria-labelledby="workflow-title">
+        <div class="section-heading"><p class="eyebrow">YOUR EVERYDAY APPS</p><h2 id="workflow-title">A few words. A familiar shortcut.</h2></div>
+        <ol class="steps">
+          <li><span class="step-number">01</span><h3>Choose a field</h3><p>Click where you want to write, in a document, message, or text editor.</p></li>
+          <li><span class="step-number">02</span><h3>Say what you mean</h3><p>Press Option-Space to start. Speak, then press it again to finish. Option-Escape cancels.</p></li>
+          <li><span class="step-number">03</span><h3>Keep writing</h3><p>Dhwani copies the transcript. With Accessibility access, it can also paste into the original field.</p></li>
+        </ol>
+        <p class="section-note">If you switch apps or fields, automatic paste is withheld. You can paste manually with Command-V. Live delivery across apps is still being tested.</p>
+      </section>
+
+      <section class="install section" aria-labelledby="install-title">
+        <div>
+          <p class="eyebrow">A MAC APP</p>
+          <h2 id="install-title">Open the DMG.<br>Drag into Applications.</h2>
+          <p class="body-copy">That is how you install the private test package when a maintainer provides it. No Xcode or terminal commands are needed.</p>
+          <p class="body-copy muted">The beta is locally signed and has not been notarized by Apple. macOS may require <strong>Open Anyway</strong> in Privacy &amp; Security.</p>
+          <a class="text-link" href="https://github.com/Venkat-RJ/dhwani/blob/main/docs/BETA-INSTALL.md">Read the installation guide <span aria-hidden="true">↗</span></a>
+        </div>
+        <div class="install-card">
+          <p class="card-label">BEFORE YOUR FIRST DICTATION</p>
+          <ul class="permission-list">
+            <li><span class="permission-icon" aria-hidden="true">1</span><div><h3>Microphone</h3><p>For listening while you record.</p></div></li>
+            <li><span class="permission-icon" aria-hidden="true">2</span><div><h3>Speech Recognition</h3><p>For Apple's recognition engine.</p></div></li>
+            <li><span class="permission-icon optional" aria-hidden="true">3</span><div><h3>Accessibility <small>Optional</small></h3><p>For automatic paste. Otherwise, use Command-V.</p></div></li>
+          </ul>
+          <p class="card-footnote">Apple Silicon, M1 or newer. The build targets macOS 14+. Live dictation on macOS 14 remains unverified.</p>
+        </div>
+      </section>
+
+      <section class="privacy section" id="privacy" aria-labelledby="privacy-title">
+        <div class="privacy-intro"><p class="eyebrow">KNOW WHAT YOU'RE USING</p><h2 id="privacy-title">Apple speech.<br>Clearly disclosed.</h2><p class="body-copy">Apple supplies the speech engine and language models. Dhwani requires an available on-device model and has no network-recognition fallback.</p><a class="text-link" href="https://github.com/Venkat-RJ/dhwani/blob/main/docs/PRIVACY.md">Read the full disclosure <span aria-hidden="true">↗</span></a></div>
+        <div class="privacy-facts">
+          <article><h3>Local processing is required in source</h3><p>This relies on Apple's documented API behavior. Runtime network activity has not been independently audited.</p></article>
+          <article><h3>You choose what gets saved</h3><p>History, the latest-transcript file, and launch at login start off. Upgrades preserve your choices.</p></article>
+          <article><h3>The clipboard is part of the workflow</h3><p>Regular dictation replaces the clipboard. Other apps can read it, and your destination app handles pasted text under its own policies.</p></article>
+        </div>
+      </section>
+
+      <section class="questions section" aria-labelledby="questions-title">
+        <h2 id="questions-title">Before you try it</h2>
+        <details><summary>Can I download Dhwani today?</summary><p>There is no public download link yet. Private test packages were prepared before the rename. The maintainer will confirm the filename and checksum for your session. <a href="https://github.com/Venkat-RJ/dhwani/issues/new?template=early_testing.yml">Request the early beta</a> with your macOS version, chip family, and speech language. A GitHub account is needed, and requests are public. Do not include private dictations or contact details.</p></details>
+        <details><summary>What has been tested?</summary><p>Build, automated checks, packaging, and startup have passed for the reviewed versions. Live dictation, paste, privacy observations, and first installation on a fresh Mac still need acceptance testing. Read the <a href="https://github.com/Venkat-RJ/dhwani/blob/main/docs/VERIFICATION.md">verification record</a> for exact checks and their limits.</p></details>
+        <details><summary>Do I need to give Accessibility access?</summary><p>Only if you want automatic paste. Microphone and Speech Recognition access are needed to dictate. Without Accessibility, Dhwani copies the transcript and you paste it with Command-V.</p></details>
+        <details><summary>Can I contribute or build it myself?</summary><p>Yes. The app source is MIT licensed. Start with the <a href="https://github.com/Venkat-RJ/dhwani/blob/main/CONTRIBUTING.md">contributor guide</a> or <a href="https://github.com/Venkat-RJ/dhwani/blob/main/BUILD.md">build instructions</a>. Useful work includes setup, permission recovery, languages, and safe text delivery.</p></details>
+      </section>
+
+      <section class="closing" aria-labelledby="closing-title"><p class="eyebrow">HELP TEST DHWANI</p><h2 id="closing-title">Try it. Tell us what happens.</h2><p>A short session and a clear report can help improve installation, dictation, and paste behavior.</p><a class="button primary" href="https://github.com/Venkat-RJ/dhwani/issues/new?template=early_testing.yml">Request early beta <span aria-hidden="true">↗</span></a><p class="closing-note">Use synthetic text. Keep private recordings and dictations out of public reports.</p></section>
+    </main>
+
+    <footer><span>Dhwani <span class="footer-license">MIT-licensed source</span></span><nav aria-label="Footer navigation"><a href="https://github.com/Venkat-RJ/dhwani">GitHub</a><a href="https://github.com/Venkat-RJ/dhwani/issues/new?template=bug_report.yml">Report a bug</a><a href="https://github.com/Venkat-RJ/dhwani/blob/main/SECURITY.md">Security</a></nav></footer>
+  </div>
+</body>
+</html>

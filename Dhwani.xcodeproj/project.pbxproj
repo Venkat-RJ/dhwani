@@ -7,13 +7,13 @@
 	objects = {
 
 /* Begin PBXFileReference section */
-		21060BB62FCC03EF007182FF /* Lokaah Talky.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Lokaah Talky.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		21060BB62FCC03EF007182FF /* Dhwani.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Dhwani.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		21060BB82FCC03EF007182FF /* Lokaah Talky */ = {
+		21060BB82FCC03EF007182FF /* Dhwani */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = "Lokaah Talky";
+			path = "Dhwani";
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -32,7 +32,7 @@
 		21060BAD2FCC03EF007182FF = {
 			isa = PBXGroup;
 			children = (
-				21060BB82FCC03EF007182FF /* Lokaah Talky */,
+				21060BB82FCC03EF007182FF /* Dhwani */,
 				21060BB72FCC03EF007182FF /* Products */,
 			);
 			sourceTree = "<group>";
@@ -40,7 +40,7 @@
 		21060BB72FCC03EF007182FF /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				21060BB62FCC03EF007182FF /* Lokaah Talky.app */,
+				21060BB62FCC03EF007182FF /* Dhwani.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -48,9 +48,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		21060BB52FCC03EF007182FF /* Lokaah Talky */ = {
+		21060BB52FCC03EF007182FF /* Dhwani */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 21060BC12FCC03EF007182FF /* Build configuration list for PBXNativeTarget "Lokaah Talky" */;
+			buildConfigurationList = 21060BC12FCC03EF007182FF /* Build configuration list for PBXNativeTarget "Dhwani" */;
 			buildPhases = (
 				21060BB22FCC03EF007182FF /* Sources */,
 				21060BB32FCC03EF007182FF /* Frameworks */,
@@ -61,13 +61,13 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				21060BB82FCC03EF007182FF /* Lokaah Talky */,
+				21060BB82FCC03EF007182FF /* Dhwani */,
 			);
-			name = "Lokaah Talky";
+			name = "Dhwani";
 			packageProductDependencies = (
 			);
-			productName = "Lokaah Talky";
-			productReference = 21060BB62FCC03EF007182FF /* Lokaah Talky.app */;
+			productName = "Dhwani";
+			productReference = 21060BB62FCC03EF007182FF /* Dhwani.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -85,7 +85,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 21060BB12FCC03EF007182FF /* Build configuration list for PBXProject "Lokaah Talky" */;
+			buildConfigurationList = 21060BB12FCC03EF007182FF /* Build configuration list for PBXProject "Dhwani" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -99,7 +99,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				21060BB52FCC03EF007182FF /* Lokaah Talky */,
+				21060BB52FCC03EF007182FF /* Dhwani */,
 			);
 		};
 /* End PBXProject section */
@@ -256,8 +256,8 @@
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Lokaah Talky uses the microphone to transcribe your voice.";
-				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Lokaah Talky uses Apple's speech engine and requires on-device processing to convert your voice to text.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Dhwani uses the microphone to transcribe your voice.";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Dhwani uses Apple's speech engine and requires on-device processing to convert your voice to text.";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -265,7 +265,7 @@
 				MARKETING_VERSION = 1.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.lokaah.talky";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				INFOPLIST_KEY_CFBundleDisplayName = "Lokaah Talky";
+				INFOPLIST_KEY_CFBundleDisplayName = "Dhwani";
 				REGISTER_APP_GROUPS = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -289,8 +289,8 @@
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Lokaah Talky uses the microphone to transcribe your voice.";
-				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Lokaah Talky uses Apple's speech engine and requires on-device processing to convert your voice to text.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Dhwani uses the microphone to transcribe your voice.";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Dhwani uses Apple's speech engine and requires on-device processing to convert your voice to text.";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -298,7 +298,7 @@
 				MARKETING_VERSION = 1.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.lokaah.talky";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				INFOPLIST_KEY_CFBundleDisplayName = "Lokaah Talky";
+				INFOPLIST_KEY_CFBundleDisplayName = "Dhwani";
 				REGISTER_APP_GROUPS = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -312,7 +312,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		21060BB12FCC03EF007182FF /* Build configuration list for PBXProject "Lokaah Talky" */ = {
+		21060BB12FCC03EF007182FF /* Build configuration list for PBXProject "Dhwani" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				21060BBF2FCC03EF007182FF /* Debug */,
@@ -321,7 +321,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		21060BC12FCC03EF007182FF /* Build configuration list for PBXNativeTarget "Lokaah Talky" */ = {
+		21060BC12FCC03EF007182FF /* Build configuration list for PBXNativeTarget "Dhwani" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				21060BC22FCC03EF007182FF /* Debug */,

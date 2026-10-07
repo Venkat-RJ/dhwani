@@ -1,6 +1,6 @@
 # Preparing an Apple-notarized public binary
 
-Talky is currently a public source preview.
+Dhwani is currently a public source preview.
 Live dictation acceptance and a verified download remain separate release requirements.
 For a beta without Apple notarization, use the separate [unnotarized beta workflow](UNNOTARIZED-BETA.md).
 The Developer ID and notarization requirements below apply to this Apple-notarized distribution path.
@@ -104,7 +104,7 @@ Inherited extended ACLs are removed before the script writes build or artifact d
 The script verifies ownership, private permissions, and the absence of ACL entries on the final directory and metadata.
 The directory contains:
 
-- `Lokaah-Talky-<tag>-arm64.zip`: the stapled app archive.
+- `Dhwani-<tag>-arm64.zip`: the stapled app archive.
 - `SHA256SUMS`: its final SHA-256 checksum.
 - `manifest.json`: immutable source and artifact identities and completed tool checks.
 - `notarization-log.json`: the accepted submission's reviewed log.

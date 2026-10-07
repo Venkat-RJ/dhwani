@@ -112,15 +112,15 @@ assert "--release" in args and "--adhoc" not in args
 config = json.loads(pathlib.Path(os.environ["TALKY_RELEASE_MOCK_CONFIG"]).read_text())
 if config.get("buildFailure"): sys.exit(11)
 root = pathlib.Path.cwd()
-app = pathlib.Path(args[args.index("--output-dir") + 1]) / "Lokaah Talky.app"
+app = pathlib.Path(args[args.index("--output-dir") + 1]) / "Dhwani.app"
 (app / "Contents/MacOS").mkdir(parents=True)
 (app / "Contents/Resources").mkdir()
-(app / "Contents/MacOS/Lokaah Talky").write_bytes(b"fixture executable")
+(app / "Contents/MacOS/Dhwani").write_bytes(b"fixture executable")
 (app / "Contents/Resources/AppIcon.icns").write_bytes(b"fixture icon")
-info = {"CFBundleIdentifier": "com.lokaah.talky", "CFBundleExecutable": "Lokaah Talky",
+info = {"CFBundleIdentifier": "com.lokaah.talky", "CFBundleExecutable": "Dhwani",
         "CFBundleShortVersionString": "0.0.0", "CFBundleVersion": "1", "LSMinimumSystemVersion": "14.0",
         "LSUIElement": True, "NSMicrophoneUsageDescription": "Mic", "NSSpeechRecognitionUsageDescription": "Speech",
-        "TalkyBuildConfiguration": "Release", "TalkyBuildMethod": "local-clt", "TalkySourceSHA256": hashlib.sha256((root / "Lokaah Talky/LokaahTalkyApp.swift").read_bytes()).hexdigest()}
+        "TalkyBuildConfiguration": "Release", "TalkyBuildMethod": "local-clt", "TalkySourceSHA256": hashlib.sha256((root / "Dhwani/DhwaniApp.swift").read_bytes()).hexdigest()}
 if config.get("wrongSourceHash"): info["TalkySourceSHA256"] = "0" * 64
 (app / "Contents/Info.plist").write_bytes(plistlib.dumps(info))
 if config.get("extraPayload"): (app / "Contents/Resources/voice_input.txt").write_text("synthetic private transcript")
@@ -137,8 +137,8 @@ class BinaryReleaseTests(unittest.TestCase):
         self.repo.mkdir()
         shutil.copytree(ROOT / "scripts", self.repo / "scripts")
         (self.repo / "build-local.sh").write_text(BUILD_FIXTURE)
-        (self.repo / "Lokaah Talky").mkdir()
-        self.source = self.repo / "Lokaah Talky/LokaahTalkyApp.swift"
+        (self.repo / "Dhwani").mkdir()
+        self.source = self.repo / "Dhwani/DhwaniApp.swift"
         self.source.write_text("// exact tagged source fixture\n")
         self.source_hash = hashlib.sha256(self.source.read_bytes()).hexdigest()
         self.mock = self.base / "bin"
@@ -217,11 +217,11 @@ class BinaryReleaseTests(unittest.TestCase):
         self.assertEqual(self.output.stat().st_mode & 0o777, 0o700)
         for path in self.output.iterdir(): self.assertEqual(path.stat().st_mode & 0o777, 0o600)
         with zipfile.ZipFile(self.output / manifest["artifact"]) as zipped:
-            info = plistlib.loads(zipped.read("Lokaah Talky.app/Contents/Info.plist"))
+            info = plistlib.loads(zipped.read("Dhwani.app/Contents/Info.plist"))
             self.assertEqual(info["CFBundleVersion"], "3")
             self.assertEqual(info["CFBundleShortVersionString"], "1.1.0")
-            self.assertEqual(zipped.getinfo("Lokaah Talky.app/Contents/_CodeSignature/CodeResources").external_attr >> 16 & 0o777, 0o644)
-            self.assertEqual(zipped.getinfo("Lokaah Talky.app/Contents/MacOS/Lokaah Talky").external_attr >> 16 & 0o777, 0o755)
+            self.assertEqual(zipped.getinfo("Dhwani.app/Contents/_CodeSignature/CodeResources").external_attr >> 16 & 0o777, 0o644)
+            self.assertEqual(zipped.getinfo("Dhwani.app/Contents/MacOS/Dhwani").external_attr >> 16 & 0o777, 0o755)
         self.assertFalse(any("import" in call or "store-credentials" in call for call in self.calls()))
         self.assertFalse(any(call[0] in ("open", "gh") for call in self.calls()))
         self.assertNotIn("fixture-notary", (self.output / "manifest.json").read_text())
@@ -353,7 +353,7 @@ class BinaryReleaseTests(unittest.TestCase):
         spec = importlib.util.spec_from_file_location("talky_release_fixture", ROOT / "scripts/release_tool.py")
         release = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(release)
-        app = self.base / "archive-fixture/Lokaah Talky.app"
+        app = self.base / "archive-fixture/Dhwani.app"
         resource = app / "Contents/Resources/AppIcon.icns"
         resource.parent.mkdir(parents=True)
         resource.write_bytes(b"synthetic resource")
@@ -362,7 +362,7 @@ class BinaryReleaseTests(unittest.TestCase):
         subprocess.run(["/usr/bin/ditto", "-c", "-k", "--sequesterRsrc", "--keepParent", str(app), str(archive)], check=True)
         with zipfile.ZipFile(archive) as zipped: self.assertIn("__MACOSX/", zipped.namelist())
         release.archive_check(archive)
-        for filename in ("../outside", "__MACOSX/../../outside", "/absolute", "unrelated.txt", "Lokaah Talky.app/link"):
+        for filename in ("../outside", "__MACOSX/../../outside", "/absolute", "unrelated.txt", "Dhwani.app/link"):
             with self.subTest(filename=filename):
                 entry = zipfile.ZipInfo(filename)
                 if filename.endswith("/link"): entry.external_attr = 0o120777 << 16

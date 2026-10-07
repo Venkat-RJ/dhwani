@@ -39,7 +39,7 @@ done
 }
 mkdir -p "$talky_output"
 talky_output="$(cd "$talky_output" && pwd)"
-talky_app="$talky_output/Lokaah Talky.app"
+talky_app="$talky_output/Dhwani.app"
 if [ -L "$talky_app" ]; then
     echo "Refusing to replace a symlinked output bundle: $talky_app" >&2
     exit 1
@@ -51,7 +51,7 @@ cleanup() {
     trap - EXIT INT TERM HUP
     set +e
     if [ "$status" -ne 0 ] && [ "$talky_replacing" -eq 1 ]; then
-        if [ ! -e "$talky_stage/Lokaah Talky.app" ]; then
+        if [ ! -e "$talky_stage/Dhwani.app" ]; then
             rm -rf "$talky_app"
         fi
         if [ -e "$talky_stage/previous.app" ]; then
@@ -69,15 +69,15 @@ trap 'exit 130' INT
 trap 'exit 143' TERM
 trap 'exit 129' HUP
 
-talky_bundle="$talky_stage/Lokaah Talky.app"
+talky_bundle="$talky_stage/Dhwani.app"
 mkdir -p "$talky_bundle/Contents/MacOS" "$talky_bundle/Contents/Resources" "$talky_stage/module-cache"
 # Snapshot the source so concurrent edits cannot change a build in progress.
-cp "$talky_root/Lokaah Talky/LokaahTalkyApp.swift" "$talky_stage/LokaahTalkyApp.swift"
-talky_source_hash="$(shasum -a 256 "$talky_stage/LokaahTalkyApp.swift" | cut -d ' ' -f 1)"
+cp "$talky_root/Dhwani/DhwaniApp.swift" "$talky_stage/DhwaniApp.swift"
+talky_source_hash="$(shasum -a 256 "$talky_stage/DhwaniApp.swift" | cut -d ' ' -f 1)"
 talky_sdk="$(DEVELOPER_DIR="$talky_developer_dir" xcrun --sdk macosx --show-sdk-path)"
 echo "Building Apple Silicon app for macOS 14+ with $talky_developer_dir"
 DEVELOPER_DIR="$talky_developer_dir" xcrun swiftc \
-    "$talky_optimization" -parse-as-library -swift-version 5 -module-name LokaahTalky \
+    "$talky_optimization" -parse-as-library -swift-version 5 -module-name Dhwani \
     -default-isolation MainActor \
     -enable-upcoming-feature NonisolatedNonsendingByDefault \
     -enable-upcoming-feature InferIsolatedConformances \
@@ -85,21 +85,22 @@ DEVELOPER_DIR="$talky_developer_dir" xcrun swiftc \
     -target arm64-apple-macosx14.0 -sdk "$talky_sdk" \
     -module-cache-path "$talky_stage/module-cache" \
     -Xlinker -no_adhoc_codesign \
-    "$talky_stage/LokaahTalkyApp.swift" -o "$talky_bundle/Contents/MacOS/Lokaah Talky"
+    "$talky_stage/DhwaniApp.swift" -o "$talky_bundle/Contents/MacOS/Dhwani"
 
 mkdir "$talky_stage/AppIcon.iconset"
-cp "$talky_root/Lokaah Talky/Assets.xcassets/AppIcon.appiconset/"*.png "$talky_stage/AppIcon.iconset/"
+cp "$talky_root/Dhwani/Assets.xcassets/AppIcon.appiconset/"*.png "$talky_stage/AppIcon.iconset/"
 iconutil --convert icns "$talky_stage/AppIcon.iconset" --output "$talky_bundle/Contents/Resources/AppIcon.icns"
 cat > "$talky_bundle/Contents/Info.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0"><dict>
 <key>CFBundleDevelopmentRegion</key><string>en</string>
-<key>CFBundleExecutable</key><string>Lokaah Talky</string>
+<key>CFBundleExecutable</key><string>Dhwani</string>
 <key>CFBundleIconFile</key><string>AppIcon.icns</string>
 <key>CFBundleIdentifier</key><string>com.lokaah.talky</string>
 <key>CFBundleInfoDictionaryVersion</key><string>6.0</string>
-<key>CFBundleName</key><string>Lokaah Talky</string>
+<key>CFBundleName</key><string>Dhwani</string>
+<key>CFBundleDisplayName</key><string>Dhwani</string>
 <key>CFBundlePackageType</key><string>APPL</string>
 <key>CFBundleShortVersionString</key><string>1.1.0</string>
 <key>CFBundleVersion</key><string>2</string>
@@ -107,8 +108,8 @@ cat > "$talky_bundle/Contents/Info.plist" <<PLIST
 <key>LSUIElement</key><true/>
 <key>NSHighResolutionCapable</key><true/>
 <key>NSPrincipalClass</key><string>NSApplication</string>
-<key>NSMicrophoneUsageDescription</key><string>Lokaah Talky uses your microphone for on-device dictation.</string>
-<key>NSSpeechRecognitionUsageDescription</key><string>Lokaah Talky uses Apple's speech engine and requires on-device processing to convert your voice to text.</string>
+<key>NSMicrophoneUsageDescription</key><string>Dhwani uses your microphone for on-device dictation.</string>
+<key>NSSpeechRecognitionUsageDescription</key><string>Dhwani uses Apple's speech engine and requires on-device processing to convert your voice to text.</string>
 <key>TalkyBuildMethod</key><string>local-clt</string>
 <key>TalkyBuildConfiguration</key><string>$talky_configuration</string>
 <key>TalkySourceSHA256</key><string>$talky_source_hash</string>

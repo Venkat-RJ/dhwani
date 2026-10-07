@@ -45,7 +45,7 @@ if name == "codesign":
     sys.exit(1 if case == "sign-fails" or (case == "verify-fails" and "--verify" in args) else 0)
 if name == "mv":
     source = pathlib.Path(args[0])
-    if case == "replace-fails" and source.parent.name.startswith(".talky-install.") and source.name == "Lokaah Talky.app":
+    if case == "replace-fails" and source.parent.name.startswith(".talky-install.") and source.name == "Dhwani.app":
         sys.exit(1)
     sys.exit(subprocess.call(["/bin/mv", *args]))
 if name == "open":
@@ -133,13 +133,13 @@ class ScriptTests(unittest.TestCase):
         shutil.copy2(ROOT / "test/voice-test.sh", self.project / "voice-test.sh")
         self.destination = self.base / "Applications"
         self.destination.mkdir()
-        self.app = self.destination / "Lokaah Talky.app"
+        self.app = self.destination / "Dhwani.app"
         self.app.mkdir()
         (self.app / "old-marker").write_text("previous")
-        source = self.project / "build/Build/Products/Debug/Lokaah Talky.app/Contents"
+        source = self.project / "build/Build/Products/Debug/Dhwani.app/Contents"
         (source / "MacOS").mkdir(parents=True)
         (source / "Info.plist").write_text("fixture")
-        binary = source / "MacOS/Lokaah Talky"
+        binary = source / "MacOS/Dhwani"
         binary.write_text("fixture")
         binary.chmod(0o755)
         (source.parent / "new-marker").write_text("new")
@@ -201,6 +201,18 @@ class ScriptTests(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assert_preserved()
         self.assertNotIn("OK Installed", result.stdout)
+
+    def test_rename_refuses_a_second_copy_without_changing_either_app(self):
+        legacy = self.destination / "Lokaah Talky.app"
+        legacy.mkdir()
+        (legacy / "old-marker").write_text("previous brand")
+        result = self.run_script("reinstall.sh", "--build")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("before installing Dhwani", result.stderr)
+        self.assert_preserved()
+        self.assertEqual((legacy / "old-marker").read_text(), "previous brand")
+        self.assertEqual(self.calls(), [])
+        self.assertEqual(list(self.tmp.iterdir()), [])
 
     def test_install_preparation_failures_preserve_app(self):
         for case in ("no-identity", "copy-fails", "sign-fails", "verify-fails"):

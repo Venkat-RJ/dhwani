@@ -79,10 +79,10 @@ class InterruptedHarnessTests(unittest.TestCase):
         for interruption in (signal.SIGTERM, signal.SIGHUP):
             with self.subTest(signal=interruption), tempfile.TemporaryDirectory(prefix="talky-smoke-interruption-") as name:
                 fixture = Path(name)
-                app = fixture / "Lokaah Talky.app"
-                executable = app / "Contents/MacOS/Lokaah Talky"
+                app = fixture / "Dhwani.app"
+                executable = app / "Contents/MacOS/Dhwani"
                 executable.parent.mkdir(parents=True)
-                info = {"CFBundleIdentifier": "com.lokaah.talky", "CFBundleExecutable": "Lokaah Talky",
+                info = {"CFBundleIdentifier": "com.lokaah.talky", "CFBundleExecutable": "Dhwani",
                         "TalkySourceSHA256": "a" * 64, "TalkyGitCommit": "b" * 40,
                         "CFBundleShortVersionString": "1.1.0", "CFBundleVersion": "2"}
                 (app / "Contents/Info.plist").write_bytes(plistlib.dumps(info))

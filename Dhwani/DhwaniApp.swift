@@ -13,7 +13,7 @@ import AudioToolbox
 // MARK: - App entry
 
 @main
-struct LokaahTalkyApp: App {
+struct DhwaniApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
 
     var body: some Scene {
@@ -241,7 +241,7 @@ struct RootView: View {
                     .buttonStyle(.plain).accessibilityLabel("Cancel without sending").help("Cancel: Option-Escape")
             }
             Button { speech.expanded = true } label: { Image(systemName: "arrow.up.left.and.arrow.down.right").font(.system(size: 10, weight: .bold)) }
-                .buttonStyle(.plain).accessibilityLabel("Open Talky").help("Open controls and settings")
+                .buttonStyle(.plain).accessibilityLabel("Open Dhwani").help("Open controls and settings")
         }
         .padding(.horizontal, 14).frame(width: 230, height: 64)
         .background(background)
@@ -250,9 +250,9 @@ struct RootView: View {
     private var compactLabel: String {
         if speech.isListening { return "Listening" }
         if speech.phase == .processing { return "Finishing transcript" }
-        if speech.needsSetup { return "Set up Talky" }
+        if speech.needsSetup { return "Set up Dhwani" }
         if speech.phase == .unavailable { return "Open settings" }
-        return speech.statusMessage == "Option-Space to dictate" ? "Talky · Option-Space" : speech.statusMessage
+        return speech.statusMessage == "Option-Space to dictate" ? "Dhwani · Option-Space" : speech.statusMessage
     }
 
     private var fullPanel: some View {
@@ -284,13 +284,13 @@ struct RootView: View {
 
     private var header: some View {
         HStack(spacing: 8) {
-            Text("Talky").font(.system(size: 21, weight: .semibold, design: .rounded)).foregroundStyle(Phos.green)
+            Text("Dhwani").font(.system(size: 21, weight: .semibold, design: .rounded)).foregroundStyle(Phos.green)
             Spacer()
             iconButton("waveform", "Dictation", selected: page == .dictate) { page = .dictate }
             iconButton("clock.arrow.circlepath", "History", selected: page == .history) { page = .history; historyItems = speech.loadHistory() }
             iconButton("gearshape", "Settings", selected: page == .settings) { page = .settings }
             iconButton("arrow.down.right.and.arrow.up.left", "Minimize") { speech.expanded = false }
-            iconButton("xmark", "Quit Talky") { NSApp.terminate(nil) }
+            iconButton("xmark", "Quit Dhwani") { NSApp.terminate(nil) }
         }
     }
 
@@ -335,8 +335,8 @@ struct RootView: View {
 
     private var setupView: some View {
         VStack(alignment: .leading, spacing: 18) {
-            Text("Welcome to Talky").font(.title3.bold())
-            Text("Allow microphone and speech access to dictate. Accessibility is optional and lets Talky paste for you.")
+            Text("Welcome to Dhwani").font(.title3.bold())
+            Text("Allow microphone and speech access to dictate. Accessibility is optional and lets Dhwani paste for you.")
                 .font(.system(size: 13)).foregroundStyle(.secondary)
             speechPrivacyDisclosure
             Text("macOS shows Apple's Speech Recognition permission notice. Review it before granting access.")
@@ -352,7 +352,7 @@ struct RootView: View {
 
     private var speechPrivacyDisclosure: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text("Talky uses Apple's speech engine and requires on-device processing. Apple provides the engine and language models.")
+            Text("Dhwani uses Apple's speech engine and requires on-device processing. Apple provides the engine and language models.")
             Text("Runtime network activity has not been independently audited.")
             if let url = URL(string: "https://www.apple.com/legal/privacy/data/en/ask-siri-dictation/") {
                 Link("Apple's speech privacy information", destination: url)
@@ -713,7 +713,7 @@ nonisolated struct TalkyStore {
     /// Clear inherited ACLs before any exported transcript reaches the file.
     func export(_ data: Data, to url: URL) throws {
         if FileManager.default.fileExists(atPath: url.path) { try regularFile(url) }
-        var template = Array(url.deletingLastPathComponent().appendingPathComponent(".Talky-export-XXXXXX").path.utf8CString)
+        var template = Array(url.deletingLastPathComponent().appendingPathComponent(".Dhwani-export-XXXXXX").path.utf8CString)
         let descriptor = mkstemp(&template)
         guard descriptor >= 0 else { throw NSError(domain: NSPOSIXErrorDomain, code: Int(errno)) }
         let temporaryPath = String(cString: template)
@@ -1148,7 +1148,7 @@ final class SpeechManager: ObservableObject {
             launchAtLogin = SMAppService.mainApp.status == .enabled
             if enabled && !launchAtLogin {
                 SMAppService.openSystemSettingsLoginItems()
-                statusMessage = "Approve Talky in Login Items"
+                statusMessage = "Approve Dhwani in Login Items"
             }
         } catch { statusMessage = "Login item: \(error.localizedDescription)" }
     }
@@ -1548,7 +1548,7 @@ final class SpeechManager: ObservableObject {
 
     func exportHistory() {
         let panel = NSSavePanel()
-        panel.nameFieldStringValue = "Talky-history.txt"
+        panel.nameFieldStringValue = "Dhwani-history.txt"
         panel.title = "Export local dictation history"
         PanelChrome.dropForPrompt()
         guard panel.runModal() == .OK, let url = panel.url else { return }

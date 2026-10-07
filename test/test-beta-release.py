@@ -82,9 +82,9 @@ class BetaReleaseTests(unittest.TestCase):
         for path in self.output.iterdir():
             self.assertEqual(path.stat().st_mode & 0o777, 0o600)
         with zipfile.ZipFile(self.output / manifest["artifact"]) as zipped:
-            info = json.loads(zipped.read("Lokaah Talky.app/Contents/Resources/ReleaseProvenance.json"))
+            info = json.loads(zipped.read("Dhwani.app/Contents/Resources/ReleaseProvenance.json"))
             self.assertEqual(info, manifest["identity"])
-            executable = zipped.getinfo("Lokaah Talky.app/Contents/MacOS/Lokaah Talky")
+            executable = zipped.getinfo("Dhwani.app/Contents/MacOS/Dhwani")
             self.assertEqual(executable.external_attr >> 16 & 0o777, 0o755)
         result = self.verify(self.accepted())
         self.assertEqual(result.returncode, 0, result.stderr)

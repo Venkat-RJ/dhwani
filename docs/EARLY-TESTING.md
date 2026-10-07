@@ -1,6 +1,6 @@
-# Help test Talky
+# Help test Dhwani
 
-Talky is a voice-typing app for Apple Silicon Macs, currently in early testing.
+Dhwani is a voice-typing app for Apple Silicon Macs, currently in early testing.
 We are looking for help with installation, permissions, dictation, and pasting into everyday apps.
 You do not need to write code to report a useful result.
 
@@ -11,7 +11,7 @@ There is no public download link yet.
 A private DMG test package is available for coordinated testing: open it and drag the app into Applications.
 The original ZIP candidate is also retained.
 
-[Register your interest in testing](https://github.com/Venkat-RJ/lokaah-talky/issues/new?template=early_testing.yml) using a GitHub account.
+[Register your interest in testing](https://github.com/Venkat-RJ/dhwani/issues/new?template=early_testing.yml) using a GitHub account.
 A maintainer can then coordinate an appropriate candidate and test scope with you.
 Submitting the form does not install anything or guarantee a download.
 Developers who prefer to compile the app can follow [BUILD.md](../BUILD.md).
@@ -38,7 +38,7 @@ Keep auto-send off. History and the latest-transcript file can stay off too.
 4. Stop and compare the visible transcript with what you said. Copy it manually if automatic paste is unavailable.
 5. If you choose to grant Accessibility, repeat in the same blank document and check the actual pasted text.
 6. Cancel a capture and check that it does not deliver text.
-7. Change to another empty text field during a capture and check that Talky withholds automatic paste into the changed destination.
+7. Change to another empty text field during a capture and check that Dhwani withholds automatic paste into the changed destination.
 
 If anything behaves unexpectedly, stop and report what happened.
 Keep available text before restarting or replacing the app.
@@ -46,7 +46,7 @@ A successful short session does not establish long-capture reliability or recogn
 
 ## Share the result
 
-Use the [early testing form](https://github.com/Venkat-RJ/lokaah-talky/issues/new?template=early_testing.yml) for an overall session report, or the [bug report form](https://github.com/Venkat-RJ/lokaah-talky/issues/new?template=bug_report.yml) for a reproducible problem.
+Use the [early testing form](https://github.com/Venkat-RJ/dhwani/issues/new?template=early_testing.yml) for an overall session report, or the [bug report form](https://github.com/Venkat-RJ/dhwani/issues/new?template=bug_report.yml) for a reproducible problem.
 Include:
 
 - Version or commit, macOS version, chip family, and speech language.

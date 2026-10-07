@@ -76,7 +76,7 @@ def prepare(args):
             release.run(["tar", "-xf", str(snapshot), "-C", str(source)], env=env)
             identity = {
                 "distribution": CHANNEL, "tag": args.tag, "tagObject": tag_object, "sourceCommit": commit,
-                "sourceSHA256": release.sha256(source / "Lokaah Talky/LokaahTalkyApp.swift"),
+                "sourceSHA256": release.sha256(source / "Dhwani/DhwaniApp.swift"),
                 "version": args.version, "buildNumber": args.build_number,
                 "signingFingerprint": args.identity.upper(), "currentOSMajor": args.current_os_major,
             }
@@ -102,7 +102,7 @@ def prepare(args):
                          "--timestamp=none", "--entitlements", str(entitlements), str(app)], env=env)
             release.distribution_permissions(app)
             signature_check(app, identity, env)
-            filename = f"Lokaah-Talky-{args.tag}-unnotarized-arm64.zip"
+            filename = f"Dhwani-{args.tag}-unnotarized-arm64.zip"
             archive = output / filename
             release.run(["ditto", "-c", "-k", "--sequesterRsrc", "--keepParent", str(app), str(archive)], env=env)
             archive.chmod(0o600)
@@ -149,9 +149,9 @@ def verify(args):
     release.require(release.source_identity(args.repo.resolve(), identity["tag"], env)
                     == (identity["tagObject"], identity["sourceCommit"]), "The beta tag moved after preparation.")
     source = release.run(["git", "-C", str(args.repo.resolve()), "show",
-                          identity["sourceCommit"] + ":Lokaah Talky/LokaahTalkyApp.swift"], env=env)[0]
+                          identity["sourceCommit"] + ":Dhwani/DhwaniApp.swift"], env=env)[0]
     release.require(hashlib.sha256(source).hexdigest() == identity["sourceSHA256"], "Source identity mismatch.")
-    filename = f"Lokaah-Talky-{identity['tag']}-unnotarized-arm64.zip"
+    filename = f"Dhwani-{identity['tag']}-unnotarized-arm64.zip"
     release.require(manifest.get("artifact") == filename and Path(filename).name == filename, "Unexpected beta filename.")
     checksums = manifest.get("publicFiles", {})
     release.require(isinstance(checksums, dict) and set(checksums) == {filename, *PUBLIC_DOCS}, "Unexpected public beta files.")

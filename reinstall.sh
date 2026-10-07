@@ -4,9 +4,9 @@
 set -euo pipefail
 umask 077
 
-APP_NAME="Lokaah Talky.app"
-PROJECT="Lokaah Talky.xcodeproj"
-SCHEME="Lokaah Talky"
+APP_NAME="Dhwani.app"
+PROJECT="Dhwani.xcodeproj"
+SCHEME="Dhwani"
 SIGN_IDENTITY="Talky Self-Signed"
 PROJECT_DIR="$(cd "$(dirname "$0")" && pwd)"
 DERIVED="$PROJECT_DIR/build"
@@ -52,6 +52,10 @@ if [ "$#" -gt 1 ] || { [ "$#" -eq 1 ] && [ "$1" != "--build" ]; }; then
     echo "Usage: $0 [--build]" >&2
     exit 2
 fi
+if [ -e "$DEST_DIR/Lokaah Talky.app" ] || [ -L "$DEST_DIR/Lokaah Talky.app" ]; then
+    echo "An older Lokaah Talky copy exists in $DEST_DIR. Finish recording, quit it, and move that app to Trash before installing Dhwani." >&2
+    exit 1
+fi
 if [ "${1:-}" = "--build" ]; then
     echo "> Building..."
     if ! (cd "$PROJECT_DIR" && xcodebuild -project "$PROJECT" -scheme "$SCHEME" \
@@ -61,7 +65,7 @@ if [ "${1:-}" = "--build" ]; then
         exit 1
     fi
 fi
-if [ ! -f "$SRC/Contents/Info.plist" ] || [ ! -x "$SRC/Contents/MacOS/Lokaah Talky" ]; then
+if [ ! -f "$SRC/Contents/Info.plist" ] || [ ! -x "$SRC/Contents/MacOS/Dhwani" ]; then
     echo "No complete build at $SRC. Run ./reinstall.sh --build." >&2
     exit 1
 fi
@@ -92,7 +96,7 @@ codesign --force --deep --sign "$SIGN_IDENTITY" "$STAGED_APP"
 codesign --verify --deep --strict "$STAGED_APP"
 
 # Stage and signature failures leave the current app and process untouched.
-PROCESS_PATTERN='Lokaah Talky[.]app/Contents/MacOS/'
+PROCESS_PATTERN='Dhwani[.]app/Contents/MacOS/'
 if pgrep -f "$PROCESS_PATTERN" >/dev/null; then
     WAS_RUNNING=1
     pkill -TERM -f "$PROCESS_PATTERN"

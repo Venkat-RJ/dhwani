@@ -1,6 +1,6 @@
 # Contributing
 
-Talky is an MIT-licensed source preview.
+Dhwani is an MIT-licensed source preview.
 Useful contributions include permission recovery, safe text delivery, local language support, accessibility, and long-capture testing.
 Read [PRODUCT.md](PRODUCT.md) for the scope and remaining checks before proposing a larger feature.
 
@@ -19,7 +19,7 @@ For changes to capture, storage, signing, or delivery, discuss the approach befo
 
 | Area | Starting point |
 | --- | --- |
-| Floating panel, views, recognition, delivery, and storage | `Lokaah Talky/LokaahTalkyApp.swift`; see the architecture map in [BUILD.md](BUILD.md#architecture) |
+| Floating panel, views, recognition, delivery, and storage | `Dhwani/DhwaniApp.swift`; see the architecture map in [BUILD.md](BUILD.md#architecture) |
 | Deterministic recognition and product checks | `test/RecognitionLifecycleTests.swift` and `test/ProductCoreTests.swift` |
 | Build, installation, and command tests | Root shell scripts and `test/test-scripts.py` |
 | Candidate packaging and acceptance | `scripts/` and the release tests in `test/` |
@@ -31,7 +31,7 @@ A future split should preserve behavior and update both Xcode and standalone bui
 
 ## Development workflow
 
-1. Fork or clone [the repository](https://github.com/Venkat-RJ/lokaah-talky).
+1. Fork or clone [the repository](https://github.com/Venkat-RJ/dhwani).
 2. Read [AGENTS.md](AGENTS.md), [BUILD.md](BUILD.md), and [TESTING.md](TESTING.md).
 3. Make a focused change and show what happens before and after it.
 4. Build an unsigned app and run the checks relevant to your change.
