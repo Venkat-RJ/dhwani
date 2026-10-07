@@ -7,8 +7,9 @@ You do not need to write code to report a useful result.
 ## Get started
 
 **You do not need to build the app to volunteer as a tester.**
-There is no public installer yet. The planned public format is a DMG that you open and drag into Applications.
-The current private test candidate is a ZIP.
+There is no public download link yet.
+A private DMG test package is available for coordinated testing: open it and drag the app into Applications.
+The original ZIP candidate is also retained.
 
 [Register your interest in testing](https://github.com/Venkat-RJ/lokaah-talky/issues/new?template=early_testing.yml) using a GitHub account.
 A maintainer can then coordinate an appropriate candidate and test scope with you.

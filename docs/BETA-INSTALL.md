@@ -1,7 +1,7 @@
 # Install the unnotarized Talky beta
 
 **No public beta installer has been released yet.**
-This guide covers ZIP test packages. The planned public DMG installer is not available yet.
+Private DMG and ZIP test packages have been prepared for coordinated testing.
 
 This beta is signed with the project's local certificate and has not been notarized by Apple.
 macOS may block the first launch because it cannot verify the developer.
@@ -11,16 +11,16 @@ Use an Apple Silicon Mac with macOS 14 or newer.
 Windows, Linux, and Intel Macs are not supported by this build.
 The selected speech language needs an available on-device model.
 
-Download only from the [official Talky releases](https://github.com/Venkat-RJ/lokaah-talky/releases).
-Choose an asset whose name ends in `unnotarized-arm64.zip` and read that release's test results and limitations.
-If no beta ZIP is listed, a downloadable beta has not been published yet.
+For a private test, use the exact package supplied by the maintainer with its version, checksum, and test scope.
+Public downloads, when available, belong on the [official Talky releases](https://github.com/Venkat-RJ/lokaah-talky/releases).
+If no app asset is listed, a public downloadable beta has not been published yet.
 GitHub's automatic source archives are source code, not the app.
 
 ## Install
 
 1. Finish any recording and quit an older Talky copy.
-2. Expand the downloaded ZIP in Finder.
-3. Drag **Lokaah Talky.app** into Applications, then open that copy.
+2. Open the DMG in Finder, or expand the ZIP if that is the test package you received.
+3. Drag **Lokaah Talky.app** into Applications. For a DMG, use the Applications shortcut and eject the disk after copying. Open the copy in Applications.
 4. If macOS blocks it, review the warning. If you trust this exact download, open **System Settings > Privacy & Security** and use **Open Anyway** for Talky, if available. Confirm the app-specific prompt.
 
 Some managed Macs do not allow this exception.

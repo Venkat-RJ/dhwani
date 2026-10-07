@@ -10,17 +10,13 @@ It uses Apple's speech engine and requires an available on-device language model
 
 ## Download and install
 
-**There is no public installer yet. Talky is in early testing.**
+**There is no public download link yet. Talky is in early testing.**
 
-The planned installation is:
-
-1. Download the Talky `.dmg`.
-2. Open it and drag **Lokaah Talky** into **Applications**.
-3. Open Talky and allow Microphone and Speech Recognition access.
-
-That installer will not require Xcode or terminal commands.
-It has not been released yet. The current private test package is a ZIP.
-An unnotarized download may also need **Open Anyway** in macOS Privacy & Security.
+A private DMG test package has been prepared. [Volunteer for a coordinated test](docs/EARLY-TESTING.md) to request access.
+Once a maintainer provides the file, open it and drag **Lokaah Talky** into **Applications**.
+Then open Talky and allow Microphone and Speech Recognition access.
+No Xcode or terminal commands are needed to install that package.
+It is not Apple-notarized, so macOS may also require **Open Anyway** in Privacy & Security.
 
 **[Volunteer to try the early beta](docs/EARLY-TESTING.md)**
 
