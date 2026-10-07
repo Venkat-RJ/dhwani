@@ -1,5 +1,8 @@
 # Install the unnotarized Talky beta
 
+**No public beta installer has been released yet.**
+This guide covers ZIP test packages. The planned public DMG installer is not available yet.
+
 This beta is signed with the project's local certificate and has not been notarized by Apple.
 macOS may block the first launch because it cannot verify the developer.
 The certificate is not a Developer ID certificate issued by Apple.

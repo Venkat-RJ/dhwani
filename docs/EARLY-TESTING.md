@@ -1,16 +1,19 @@
 # Help test Talky
 
-Talky is an MIT-licensed source preview for Apple Silicon Macs.
+Talky is a voice-typing app for Apple Silicon Macs, currently in early testing.
 We are looking for help with installation, permissions, dictation, and pasting into everyday apps.
 You do not need to write code to report a useful result.
 
 ## Get started
 
-There is no public app download yet.
-Developers can [build from source](../BUILD.md).
-If you would like to help test a packaged beta, [register your interest](https://github.com/Venkat-RJ/lokaah-talky/issues/new?template=early_testing.yml).
+**You do not need to build the app to volunteer as a tester.**
+There is no public installer yet. The planned public format is a DMG that you open and drag into Applications.
+The current private test candidate is a ZIP.
+
+[Register your interest in testing](https://github.com/Venkat-RJ/lokaah-talky/issues/new?template=early_testing.yml) using a GitHub account.
 A maintainer can then coordinate an appropriate candidate and test scope with you.
 Submitting the form does not install anything or guarantee a download.
+Developers who prefer to compile the app can follow [BUILD.md](../BUILD.md).
 
 The build targets macOS 14 or newer on Apple Silicon.
 Live dictation on macOS 14 is still unverified.
