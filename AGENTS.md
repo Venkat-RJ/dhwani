@@ -1,54 +1,49 @@
-# AGENTS.md — Lokaah Talky
+# AGENTS.md
 
-Context for AI coding agents (Claude Code, Codex, Cursor, …) working in this repo.
+## Project and writing
 
-**Internal & confidential — do not share this app, repo, or build outside Lokaah.**
+Lokaah Talky is an MIT-licensed macOS voice-dictation project.
+The repository is preparing for public release; publication and verified binary distribution are separate steps.
+Never use em dashes in new writing.
+Use short paragraphs, clear new lines, and factual claims.
 
-## What this is
-A macOS menubar-less **accessory app** (no Dock icon, no main window): a floating
-widget that records speech **on-device** and types the transcript into whatever app
-is focused. The **entire app is one file**: `Lokaah Talky/LokaahTalkyApp.swift`.
+Read `README.md`, `BUILD.md`, `TESTING.md`, and `PRODUCT.md` before changing behavior.
+App code lives in `Lokaah Talky/LokaahTalkyApp.swift`.
+The bundle identifier is `com.lokaah.talky`.
+Target macOS 14 on Apple Silicon with Xcode 26 or newer.
 
-Bundle id `com.lokaah.talky` · installs to `/Applications/Lokaah Talky.app`.
-Requirements: macOS 14+ (macOS 26 SDK), Apple Silicon, Xcode 16+.
+## Build and test
 
-## Build & run
-- One-time per machine: `./setup-cert.sh` — creates the local `Talky Self-Signed`
-  code-signing cert.
-- Build + sign + install + launch: **`./reinstall.sh --build`**
-  (re-run `./reinstall.sh` without `--build` to reinstall the last build).
-- Or open `Lokaah Talky.xcodeproj` in Xcode and Run.
-- `reinstall.sh` builds to a deterministic `build/` dir in the repo, so it never
-  installs a stale same-named app from elsewhere.
+- Use an unsigned `xcodebuild` with a separate derived-data directory for verification.
+- Run `./test/run-unit-tests.sh`, `./test/run-product-tests.sh`, and `python3 test/test-scripts.py`.
+- `./setup-cert.sh` changes the login keychain.
+- `./reinstall.sh --build` replaces and launches the installed app.
+- `./test/voice-test.sh --allow-system-changes [sentence_count]` changes audio routing.
 
-## Architecture (`Lokaah Talky/LokaahTalkyApp.swift`)
-- `AppDelegate` — `.accessory` policy, the floating `FloatingPanel` (borderless,
-  non-activating, so it never steals focus), ⌥Space Carbon global hotkey, the
-  `~/.talky/talky_cmd` command watcher, `SMAppService` launch-at-login, and a
-  Combine observer that resizes the panel (compact ↔ full).
-- `RootView` — compact "presence" widget vs. full panel; phosphor-terminal look.
-- `SpeechManager` — on-device `SFSpeechRecognizer`; long captures survive by renewing
-  the recognition session at natural pauses (+ on session end) and accumulating
-  `committedText` across sessions; writes `~/.talky/voice_history/YYYY-MM-DD.md`.
-- `Paster` — clipboard + synthesized ⌘V + Return.
-- `Waveform` / `MiniWaveform` — audio-reactive bars.
+Do not run the last three commands merely to inspect the project.
+Record environmental build failures without treating them as app defects.
+Do not add `tccutil reset` to the installer.
 
-Deeper detail: **BUILD.md**.
+## Boundaries to preserve
 
-## Conventions & gotchas
-- Edit the single Swift file; rebuild via `./reinstall.sh --build`.
-- **Signing:** the app is re-signed with the stable self-signed cert so macOS
-  permission grants (Microphone / Speech / Accessibility) persist across rebuilds.
-  **Do NOT add `tccutil reset` to `reinstall.sh`** — that was the old ad-hoc workaround.
-- **Text insertion:** dictation **always copies to the clipboard**, then pastes with
-  **⌘V**. ⌘V works everywhere (incl. Terminal). Do not make AX `kAXSelectedText` the
-  primary insertion path — Terminal rejects it.
-- Data dir is `~/.talky/` (`voice_history/`, `voice_input.txt`, `talky_cmd`).
-- Never commit `build/`, `DerivedData/`, `video/node_modules/`, `.DS_Store` (see `.gitignore`).
-- The explainer video is Remotion source in `video/` (`cd video && npm run render`).
+- Require supported on-device recognition before installing the microphone tap. Never fall back to network recognition.
+- Keep capture state on the main actor and synchronize the request used by the audio callback.
+- Scope callbacks, timeouts, and delivery work to the capture that created them.
+- Regular dictation copies to the clipboard and uses Command-V for paste. Do not replace it with AX selected-text insertion.
+- Require the original app and focused element to match before paste and Return. Do not reactivate a stale target.
+- Auto-send, history, latest-transcript persistence, and launch at login start off.
+- Cancellation and isolated test captures must not perform normal delivery or persistence.
+- Store private directories with `0700` and private files with `0600`.
+- Keep private keys, recordings, real transcripts, permissions databases, build outputs, and dependency directories out of Git.
 
-## Testing
-End-to-end dictation is tested with a virtual-audio loopback (BlackHole) + `say`,
-driven through the `~/.talky/talky_cmd` hook — no human needed. Run
-`./test/voice-test.sh [sentence_count]`. Details and the coverage caveat are in
-**TESTING.md**.
+The command interface is a same-user scripting capability, not an authentication boundary.
+Treat changes to that interface, retention, signing, and text delivery as changes requiring meaningful verification.
+
+## Claims and publication
+
+Do not claim recognition accuracy or reliable capture length from a numbered-sentence coverage score.
+Do not claim a full build, live test, minimum-OS test, signing, or notarization passed unless that exact check passed.
+The files under `assets/demo.*` are historical marketing, not current runtime evidence.
+Use the canonical repository URL `https://github.com/Venkat-RJ/lokaah-talky`.
+Verify GitHub authentication and effective Git author before commits or pushes.
+Do not rewrite attribution in existing history.

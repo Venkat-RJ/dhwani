@@ -1,7 +1,12 @@
 # Lokaah Talky
 
-Internal, confidential macOS voice-dictation app. See **@AGENTS.md** for the full
-project context: build/run commands, the single-file architecture, and the key
-gotchas (stable self-signed signing, clipboard+⌘V insertion, `~/.talky` data dir).
+Read **@AGENTS.md** for project instructions, then `BUILD.md`, `TESTING.md`, and `PRODUCT.md`.
 
-Quick start: `./setup-cert.sh` once, then `./reinstall.sh --build`.
+The app source is `Lokaah Talky/LokaahTalkyApp.swift`.
+Use Xcode 26 or newer; the deployment target is macOS 14 on Apple Silicon.
+Preserve local-only recognition, destination checks, cancellation, private storage, and isolated test captures.
+
+Use unsigned builds and deterministic test suites for routine verification.
+Signing setup, reinstallation, and live loopback tests affect the user's machine.
+Do not run them simply to inspect the project.
+Never use em dashes or make unverified accuracy or release claims.

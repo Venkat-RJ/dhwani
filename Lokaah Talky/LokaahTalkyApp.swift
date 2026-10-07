@@ -7,6 +7,8 @@ import CoreGraphics
 import ApplicationServices
 import Carbon.HIToolbox
 import ServiceManagement
+import CoreAudio
+import AudioToolbox
 
 // MARK: - App entry
 
@@ -15,7 +17,7 @@ struct LokaahTalkyApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
 
     var body: some Scene {
-        // No default window — the floating panel is created by the AppDelegate so
+        // No default window. the floating panel is created by the AppDelegate so
         // it can be a non-activating HUD that never steals focus from your terminal.
         Settings { EmptyView() }
     }
@@ -27,13 +29,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var panel: FloatingPanel?
     let speech = SpeechManager()
     private var hotKey: GlobalHotKey?
+    private var cancelHotKey: GlobalHotKey?
     private var sizeObserver: AnyCancellable?
 
     /// Resize the panel between the compact presence and the full HUD, anchored
     /// on its center so it blooms in place.
     private func setPanelExpanded(_ expanded: Bool) {
         guard let panel else { return }
-        let size = expanded ? NSSize(width: 360, height: 540) : NSSize(width: 210, height: 58)
+        let size = expanded ? NSSize(width: 380, height: 640) : NSSize(width: 230, height: 64)
         let f = panel.frame
         let origin = NSPoint(x: f.midX - size.width / 2, y: f.midY - size.height / 2)
         let target = NSRect(origin: origin, size: size)
@@ -44,7 +47,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        // Accessory app: no Dock icon, no menu bar — and crucially, interacting
+        // Accessory app: no Dock icon, no menu bar. and crucially, interacting
         // with our panel does not activate us over the user's active window.
         NSApp.setActivationPolicy(.accessory)
 
@@ -58,6 +61,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         hotKey = GlobalHotKey(keyCode: UInt32(kVK_Space), modifiers: UInt32(optionKey)) { [weak self] in
             self?.speech.toggle()
         }
+        speech.shortcutAvailable = hotKey?.isRegistered == true
+        cancelHotKey = GlobalHotKey(keyCode: UInt32(kVK_Escape), modifiers: UInt32(optionKey)) { [weak self] in
+            self?.speech.cancel()
+        }
 
         // Lets Hermes / scripts drive dictation by writing start/stop/toggle to
         // ~/.talky/talky_cmd (also used for automated testing).
@@ -68,17 +75,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             .removeDuplicates()
             .sink { [weak self] expanded in self?.setPanelExpanded(expanded) }
 
-        // Launch automatically at login (registers as a background item).
-        do {
-            if SMAppService.mainApp.status != .enabled {
-                try SMAppService.mainApp.register()
-            }
-        } catch {
-            NSLog("Lokaah Talky: login-item registration failed: \(error)")
-        }
+        speech.prepare()
     }
 
     func applicationSupportsSecureRestorableState(_ app: NSApplication) -> Bool { true }
+
+    func applicationWillTerminate(_ notification: Notification) { speech.cancel() }
 }
 
 /// Temporarily lowers the always-on-top panel so a system permission dialog can
@@ -96,25 +98,35 @@ enum PanelChrome {
 /// A system-wide hotkey using Carbon's RegisterEventHotKey, which intercepts the
 /// key combo globally without needing Accessibility permission.
 final class GlobalHotKey {
-    fileprivate static var shared: GlobalHotKey?
+    private static var nextID: UInt32 = 0
+    private let id: UInt32
+    private(set) var isRegistered = false
     private var hotKeyRef: EventHotKeyRef?
     private var handlerRef: EventHandlerRef?
     private let action: @MainActor () -> Void
 
     init(keyCode: UInt32, modifiers: UInt32, action: @escaping @MainActor () -> Void) {
         self.action = action
-        GlobalHotKey.shared = self
+        GlobalHotKey.nextID += 1
+        id = GlobalHotKey.nextID
 
         var spec = EventTypeSpec(eventClass: OSType(kEventClassKeyboard),
                                  eventKind: OSType(kEventHotKeyPressed))
-        InstallEventHandler(GetApplicationEventTarget(), { _, _, _ in
-            // Carbon delivers this on the main run loop.
-            MainActor.assumeIsolated { GlobalHotKey.shared?.action() }
-            return noErr
-        }, 1, &spec, nil, &handlerRef)
+        InstallEventHandler(GetApplicationEventTarget(), { _, event, context in
+            guard let event, let context else { return OSStatus(eventNotHandledErr) }
+            var keyID = EventHotKeyID()
+            guard GetEventParameter(event, EventParamName(kEventParamDirectObject), EventParamType(typeEventHotKeyID),
+                    nil, MemoryLayout<EventHotKeyID>.size, nil, &keyID) == noErr else { return OSStatus(eventNotHandledErr) }
+            return MainActor.assumeIsolated {
+                let owner = Unmanaged<GlobalHotKey>.fromOpaque(context).takeUnretainedValue()
+                guard keyID.signature == OSType(0x484B_4559), keyID.id == owner.id else { return OSStatus(eventNotHandledErr) }
+                owner.action()
+                return noErr
+            }
+        }, 1, &spec, Unmanaged.passUnretained(self).toOpaque(), &handlerRef)
 
-        let id = EventHotKeyID(signature: OSType(0x484B_4559), id: 1) // 'HKEY'
-        RegisterEventHotKey(keyCode, modifiers, id, GetApplicationEventTarget(), 0, &hotKeyRef)
+        let keyID = EventHotKeyID(signature: OSType(0x484B_4559), id: id)
+        isRegistered = RegisterEventHotKey(keyCode, modifiers, keyID, GetApplicationEventTarget(), 0, &hotKeyRef) == noErr
     }
 
     deinit {
@@ -126,8 +138,8 @@ final class GlobalHotKey {
 /// Hosting view that lets the very first click reach SwiftUI controls. Without
 /// this, a non-activating panel swallows the first click just to become key, so
 /// the orb needs two taps and feels unresponsive.
-final class FirstMouseHostingView<Content: View>: NSHostingView<Content> {
-    required init(rootView: Content) { super.init(rootView: rootView) }
+final class FirstMouseHostingView: NSHostingView<RootView> {
+    required init(rootView: RootView) { super.init(rootView: rootView) }
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
     override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
 }
@@ -137,7 +149,7 @@ final class FirstMouseHostingView<Content: View>: NSHostingView<Content> {
 final class FloatingPanel: NSPanel {
     init() {
         super.init(
-            contentRect: NSRect(x: 0, y: 0, width: 210, height: 58),
+            contentRect: NSRect(x: 0, y: 0, width: 230, height: 64),
             styleMask: [.borderless, .nonactivatingPanel, .fullSizeContentView],
             backing: .buffered,
             defer: false
@@ -178,7 +190,7 @@ enum Phos {
 
 /// One past dictation, for the history viewer.
 struct HistoryItem: Identifiable {
-    let id = UUID()
+    let id: String
     let date: String
     let time: String
     let text: String
@@ -188,383 +200,247 @@ struct HistoryItem: Identifiable {
 
 struct RootView: View {
     @ObservedObject var speech: SpeechManager
-    @State private var closeHover = false
-    @State private var pressed = false
-    @State private var cursorOn = false
-    @State private var showHistory = false
+    private enum Page { case dictate, history, settings }
+    @State private var page: Page = .dictate
     @State private var historyItems: [HistoryItem] = []
-
-    private let size: CGFloat = 360
+    @State private var historySearch = ""
+    @State private var confirmClearHistory = false
 
     var body: some View {
-        Group {
-            if speech.expanded { fullPanel } else { collapsedWidget }
-        }
-        .environment(\.colorScheme, .dark)
-        .onAppear {
-            speech.requestPermissions()
-            withAnimation(.easeInOut(duration: 0.55).repeatForever(autoreverses: true)) { cursorOn = true }
-        }
+        Group { if speech.expanded { fullPanel } else { compactWidget } }
+            .environment(\.colorScheme, .dark)
+            .onAppear { speech.prepare() }
+            .onChange(of: speech.phase) { _, phase in
+                if phase == .idle && page == .history { historyItems = speech.loadHistory() }
+            }
+            .confirmationDialog("Delete all saved local dictation history?", isPresented: $confirmClearHistory) {
+                Button("Delete history", role: .destructive) { speech.clearHistory(); historyItems = [] }
+                Button("Cancel", role: .cancel) {}
+            } message: { Text("This removes the history files from this Mac. Clipboard contents and exported files are separate.") }
     }
 
-    // Full HUD (shown while in use).
-    private var fullPanel: some View {
-        VStack(spacing: 0) {
-            header
-            Spacer(minLength: 6)
-            waveform
-            Spacer(minLength: 10)
-            transcript
-            statusLine
-        }
-        .padding(.horizontal, 20)
-        .padding(.top, 16)
-        .padding(.bottom, 18)
-        .frame(width: size, height: 540)
-        .background(panelBackground)
-    }
-
-    // Compact "presence" — clean widget you can dictate into in place.
-    // Tap the body to start/stop; the ⤢ button opens the full panel.
-    private var collapsedWidget: some View {
+    private var compactWidget: some View {
         HStack(spacing: 10) {
             Button { speech.toggle() } label: {
-                HStack(spacing: 11) {
-                    compactIndicator
-                        .frame(width: 26, height: 26)
-                    Text(compactLabel)
-                        .font(.system(size: 13, weight: .medium, design: .rounded))
-                        .foregroundStyle(compactLabelColor)
-                        .lineLimit(1)
-                    Spacer(minLength: 0)
-                }
-                .contentShape(Rectangle())
+                HStack(spacing: 10) {
+                    if speech.isListening { MiniWaveform(level: speech.audioLevel).frame(width: 26, height: 26) }
+                    else if speech.phase == .processing { ProgressView().controlSize(.small).frame(width: 26) }
+                    else { Image(systemName: speech.needsSetup ? "mic.badge.xmark" : "mic.fill").foregroundStyle(speech.needsSetup ? Phos.amber : Phos.green).frame(width: 26) }
+                    Text(compactLabel).font(.system(size: 12, weight: .medium)).lineLimit(2).frame(maxWidth: .infinity, alignment: .leading)
+                }.contentShape(Rectangle())
             }
-            .buttonStyle(.plain)
-
-            Button { speech.expanded = true } label: {
-                Image(systemName: "arrow.up.left.and.arrow.down.right")
-                    .font(.system(size: 10, weight: .bold))
-                    .foregroundStyle(.white.opacity(0.4))
-                    .frame(width: 22, height: 22)
+            .buttonStyle(.plain).disabled(speech.phase == .processing)
+            .accessibilityLabel(speech.isListening ? "Stop dictation" : "Start dictation")
+            .help(speech.statusMessage)
+            if speech.isBusy {
+                Button { speech.cancel() } label: { Image(systemName: "xmark.circle.fill").foregroundStyle(Phos.amber) }
+                    .buttonStyle(.plain).accessibilityLabel("Cancel without sending").help("Cancel: Option-Escape")
             }
-            .buttonStyle(.plain)
-            .help("Open full panel")
-            .accessibilityLabel("Open full panel")
+            Button { speech.expanded = true } label: { Image(systemName: "arrow.up.left.and.arrow.down.right").font(.system(size: 10, weight: .bold)) }
+                .buttonStyle(.plain).accessibilityLabel("Open Talky").help("Open controls and settings")
         }
-        .padding(.horizontal, 15)
-        .frame(width: 210, height: 58)
-        .background(widgetBackground)
-    }
-
-    @ViewBuilder private var compactIndicator: some View {
-        switch speech.phase {
-        case .listening:   MiniWaveform(level: speech.audioLevel)
-        case .processing:  Image(systemName: "ellipsis").font(.system(size: 16, weight: .bold)).foregroundStyle(Phos.green)
-        case .denied, .unavailable: Image(systemName: "mic.slash.fill").font(.system(size: 14)).foregroundStyle(Phos.amber)
-        case .idle:        Image(systemName: "mic.fill").font(.system(size: 15, weight: .medium)).foregroundStyle(Phos.green).shadow(color: Phos.green.opacity(0.6), radius: 3)
-        }
+        .padding(.horizontal, 14).frame(width: 230, height: 64)
+        .background(background)
     }
 
     private var compactLabel: String {
-        switch speech.phase {
-        case .listening:   return "listening…"
-        case .processing:  return "transcribing…"
-        case .denied:      return "enable access"
-        case .unavailable: return "unavailable"
-        case .idle:        return "lokaah talky"
-        }
+        if speech.isListening { return "Listening" }
+        if speech.phase == .processing { return "Finishing transcript" }
+        if speech.needsSetup { return "Set up Talky" }
+        if speech.phase == .unavailable { return "Open settings" }
+        return speech.statusMessage == "Option-Space to dictate" ? "Talky · Option-Space" : speech.statusMessage
     }
 
-    private var compactLabelColor: Color {
-        switch speech.phase {
-        case .denied, .unavailable: return Phos.amber
-        case .idle:                 return .white.opacity(0.85)
-        default:                    return Phos.green
-        }
-    }
+    private var fullPanel: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            header
+            HStack(spacing: 5) {
+                Image(systemName: "lock.shield.fill")
+                Text("On-device · \(speech.languageName)")
+            }.font(.system(size: 11)).foregroundStyle(.secondary)
 
-    private var widgetBackground: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 16, style: .continuous).fill(.ultraThinMaterial)
-            RoundedRectangle(cornerRadius: 16, style: .continuous).fill(Color.black.opacity(0.5))
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .strokeBorder(Phos.green.opacity(speech.isListening ? 0.7 : 0.35), lineWidth: 1)
+            if speech.needsSetup && page == .dictate { setupView }
+            else {
+                switch page {
+                case .dictate: dictationView
+                case .history: historyView
+                case .settings: settingsView
+                }
+            }
+            Spacer(minLength: 0)
+            Text(speech.statusMessage)
+                .font(.system(size: 11)).foregroundStyle(statusColor)
+                .lineLimit(3).fixedSize(horizontal: false, vertical: true)
+                .accessibilityLabel("Status: " + speech.statusMessage)
+            captureControls
         }
-        .environment(\.colorScheme, .dark)
-        .shadow(color: .black.opacity(0.45), radius: 9, y: 3)
-        .animation(.easeInOut(duration: 0.2), value: speech.isListening)
+        .padding(20).frame(width: 380, height: 640)
+        .background(background)
     }
-
-    // MARK: Header
 
     private var header: some View {
-        HStack(spacing: 6) {
-            Text("lokaah talky")
-                .font(.system(size: 13, weight: .semibold, design: .monospaced))
-                .foregroundStyle(Phos.green)
-                .shadow(color: Phos.green.opacity(0.6), radius: 3)
-            // Blinking block cursor
-            Rectangle()
-                .fill(Phos.green)
-                .frame(width: 7, height: 14)
-                .opacity(cursorOn ? 1 : 0.1)
-                .shadow(color: Phos.green.opacity(0.8), radius: 3)
-
+        HStack(spacing: 8) {
+            Text("Talky").font(.system(size: 21, weight: .semibold, design: .rounded)).foregroundStyle(Phos.green)
             Spacer()
+            iconButton("waveform", "Dictation", selected: page == .dictate) { page = .dictate }
+            iconButton("clock.arrow.circlepath", "History", selected: page == .history) { page = .history; historyItems = speech.loadHistory() }
+            iconButton("gearshape", "Settings", selected: page == .settings) { page = .settings }
+            iconButton("arrow.down.right.and.arrow.up.left", "Minimize") { speech.expanded = false }
+            iconButton("xmark", "Quit Talky") { NSApp.terminate(nil) }
+        }
+    }
 
-            // REC indicator while listening
-            if speech.isListening {
-                HStack(spacing: 5) {
-                    Circle().fill(Phos.amber).frame(width: 7, height: 7)
-                        .shadow(color: Phos.amber.opacity(0.9), radius: 3)
-                    Text("REC")
-                        .font(.system(size: 11, weight: .bold, design: .monospaced))
-                        .foregroundStyle(Phos.amber)
+    private func iconButton(_ symbol: String, _ title: String, selected: Bool = false, action: @escaping () -> Void) -> some View {
+        Button(action: action) { Image(systemName: symbol).font(.system(size: 12, weight: .medium)).frame(width: 26, height: 28).foregroundStyle(selected ? Phos.green : Color.white.opacity(0.65)) }
+            .buttonStyle(.plain).help(title).accessibilityLabel(title)
+    }
+
+    private var dictationView: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Waveform(levels: speech.levels, phase: speech.phase).frame(height: 76).accessibilityHidden(true)
+            HStack {
+                Text(speech.isListening ? "LIVE TRANSCRIPT" : "TRANSCRIPT").font(.system(size: 10, weight: .semibold)).foregroundStyle(.secondary)
+                Spacer()
+                if !speech.transcribedText.isEmpty {
+                    Button { speech.copy(speech.transcribedText) } label: { Label("Copy", systemImage: "doc.on.doc") }.buttonStyle(.borderless)
                 }
-                .padding(.trailing, 4)
             }
-
-            // Minimize to the compact presence
-            Button { showHistory = false; speech.expanded = false } label: {
-                Image(systemName: "arrow.down.right.and.arrow.up.left")
-                    .font(.system(size: 11, weight: .bold))
-                    .foregroundStyle(Phos.green.opacity(0.6))
-                    .frame(width: 24, height: 22)
-                    .overlay(RoundedRectangle(cornerRadius: 4).stroke(Phos.green.opacity(0.15), lineWidth: 1))
-            }
-            .buttonStyle(.plain)
-            .help("Minimize")
-            .accessibilityLabel("Minimize")
-
-            // History viewer toggle
-            Button {
-                showHistory.toggle()
-                if showHistory { historyItems = speech.loadHistory() }
-            } label: {
-                Image(systemName: "clock.arrow.circlepath")
-                    .font(.system(size: 11, weight: .bold))
-                    .foregroundStyle(showHistory ? Phos.green : Phos.green.opacity(0.3))
-                    .frame(width: 24, height: 22)
-                    .overlay(RoundedRectangle(cornerRadius: 4)
-                        .stroke(Phos.green.opacity(showHistory ? 0.5 : 0.15), lineWidth: 1))
-            }
-            .buttonStyle(.plain)
-            .help(showHistory ? "Hide history" : "Show past conversations")
-            .accessibilityLabel("History")
-            .accessibilityValue(showHistory ? "Showing" : "Hidden")
-
-            // Auto-send toggle
-            Button { speech.autoSubmit.toggle() } label: {
-                Image(systemName: "return")
-                    .font(.system(size: 11, weight: .bold))
-                    .foregroundStyle(speech.autoSubmit ? Phos.green : Phos.green.opacity(0.3))
-                    .frame(width: 24, height: 22)
-                    .overlay(RoundedRectangle(cornerRadius: 4)
-                        .stroke(Phos.green.opacity(speech.autoSubmit ? 0.5 : 0.15), lineWidth: 1))
-            }
-            .buttonStyle(.plain)
-            .help(speech.autoSubmit ? "Auto-send on — types then presses Return"
-                                    : "Auto-send off — types only")
-            .accessibilityLabel("Auto-send")
-            .accessibilityValue(speech.autoSubmit ? "On" : "Off")
-            .accessibilityHint("When on, presses Return after inserting")
-
-            // Quit
-            Button { NSApp.terminate(nil) } label: {
-                Text("×")
-                    .font(.system(size: 16, weight: .bold, design: .monospaced))
-                    .foregroundStyle(Phos.green.opacity(closeHover ? 0.9 : 0.4))
-                    .frame(width: 22, height: 22)
-            }
-            .buttonStyle(.plain)
-            .onHover { closeHover = $0 }
-            .help("Quit Lokaah Talky")
-            .accessibilityLabel("Quit Lokaah Talky")
-        }
-    }
-
-    // MARK: The waveform (tap to talk)
-
-    private var waveform: some View {
-        Button { showHistory = false; speech.toggle() } label: {
-            Waveform(levels: speech.levels, phase: speech.phase)
-                .frame(height: 92)
-                .frame(maxWidth: .infinity)
-                .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
-        .scaleEffect(pressed ? 0.98 : 1.0)
-        .animation(.spring(response: 0.3, dampingFraction: 0.6), value: pressed)
-        .onLongPressGesture(minimumDuration: 0, maximumDistance: .infinity,
-                            pressing: { pressed = $0 }, perform: {})
-        .disabled(speech.phase == .processing)
-        .accessibilityLabel("Voice dictation")
-        .accessibilityValue(accessibilityState)
-        .accessibilityHint("Starts or stops listening. Or press Option-Space anywhere.")
-        .accessibilityAddTraits(.isButton)
-    }
-
-    private var accessibilityState: String {
-        switch speech.phase {
-        case .listening:   return "Listening"
-        case .processing:  return "Transcribing"
-        case .denied:      return "Permission needed"
-        case .unavailable: return "Unavailable"
-        case .idle:        return "Idle"
-        }
-    }
-
-    // MARK: Transcript
-
-    @ViewBuilder
-    private var transcript: some View {
-        if showHistory {
-            historyView
-        } else {
-            liveTranscript
-        }
-    }
-
-    // Live dictation: full text, scrolls, auto-follows the latest words.
-    private var liveTranscript: some View {
-        let isEmpty = speech.transcribedText.isEmpty
-        return ScrollViewReader { proxy in
-            ScrollView(.vertical, showsIndicators: true) {
-                VStack(spacing: 0) {
-                    Spacer(minLength: 0)
-                    Text(isEmpty ? placeholder : speech.transcribedText)
-                        .font(.system(size: 14, weight: .regular, design: .monospaced))
-                        .foregroundStyle(isEmpty
-                                         ? AnyShapeStyle(Phos.green.opacity(0.3))
-                                         : AnyShapeStyle(Phos.green.opacity(0.92)))
-                        .multilineTextAlignment(.leading)
-                        .lineSpacing(3)
-                        .textSelection(.enabled)
+            ScrollViewReader { proxy in
+                ScrollView {
+                    Text(speech.transcribedText.isEmpty ? "Speak naturally. Your words will appear here.\n\nOption-Space starts and stops.\nOption-Escape cancels without sending." : speech.transcribedText)
+                        .font(.system(size: 15)).lineSpacing(4).textSelection(.enabled)
+                        .foregroundStyle(speech.transcribedText.isEmpty ? .secondary : .primary)
                         .frame(maxWidth: .infinity, alignment: .leading)
-                    Spacer(minLength: 0)
-                    Color.clear.frame(height: 1).id("bottom")
-                }
-                .frame(minHeight: 240)
-                .padding(.horizontal, 2)
+                    Color.clear.frame(height: 1).id("transcript-end")
+                }.frame(height: 220)
+                    .onChange(of: speech.transcribedText) { _, _ in proxy.scrollTo("transcript-end", anchor: .bottom) }
             }
-            .frame(height: 240)
-            .mask(edgeFade)
-            .onChange(of: speech.transcribedText) { _, _ in
-                withAnimation(.easeOut(duration: 0.15)) {
-                    proxy.scrollTo("bottom", anchor: .bottom)
-                }
+            HStack {
+                Label(speech.microphoneName, systemImage: "mic").lineLimit(1)
+                Spacer()
+                if speech.saveHistory { Label("History on", systemImage: "clock") }
+                else { Label("History off", systemImage: "eye.slash") }
+            }.font(.system(size: 10)).foregroundStyle(.secondary)
+            if !speech.accessibilityAllowed {
+                Button("Enable Accessibility for automatic paste") { speech.requestAccessibilityPermission() }
+                    .buttonStyle(.borderless).font(.system(size: 12))
+                Text("Dictation still works in clipboard mode.").font(.system(size: 11)).foregroundStyle(.secondary)
             }
         }
     }
 
-    // Past conversations, newest day first, read from ~/.talky/voice_history.
-    private var historyView: some View {
-        ScrollView(.vertical, showsIndicators: true) {
-            LazyVStack(alignment: .leading, spacing: 14) {
-                if historyItems.isEmpty {
-                    Text("No past conversations yet.")
-                        .font(.system(size: 13, design: .monospaced))
-                        .foregroundStyle(Phos.green.opacity(0.4))
-                        .padding(.top, 10)
-                } else {
-                    Text("\(historyItems.count) entries · newest first")
-                        .font(.system(size: 10, weight: .semibold, design: .monospaced))
-                        .foregroundStyle(Phos.green.opacity(0.4))
-                    ForEach(historyItems) { item in
-                        VStack(alignment: .leading, spacing: 3) {
-                            Text("\(item.date)  \(item.time)")
-                                .font(.system(size: 10, weight: .semibold, design: .monospaced))
-                                .foregroundStyle(Phos.amber.opacity(0.85))
-                            Text(item.text)
-                                .font(.system(size: 13, design: .monospaced))
-                                .foregroundStyle(Phos.green.opacity(0.9))
-                                .multilineTextAlignment(.leading)
-                                .lineSpacing(2)
-                                .textSelection(.enabled)
-                                .fixedSize(horizontal: false, vertical: true)
-                        }
-                        .frame(maxWidth: .infinity, alignment: .leading)
+    private var setupView: some View {
+        VStack(alignment: .leading, spacing: 18) {
+            Text("Welcome to Talky").font(.title3.bold())
+            Text("Allow microphone and speech access to dictate. Recognition stays on this Mac. Accessibility is optional and lets Talky paste for you.")
+                .font(.system(size: 13)).foregroundStyle(.secondary)
+            permissionRow("Microphone", description: "Listens only while you record", granted: speech.microphoneAllowed, action: speech.requestMicrophonePermission)
+            permissionRow("Speech recognition", description: "Uses Apple's on-device model", granted: speech.speechAllowed, action: speech.requestSpeechPermission)
+            permissionRow("Accessibility", description: "Pastes into the original text field", granted: speech.accessibilityAllowed, action: speech.requestAccessibilityPermission)
+            Text("On a fresh installation, history and automation output start off. Completed regular dictation is copied to your clipboard.")
+                .font(.system(size: 11)).foregroundStyle(.secondary)
+            Button("Check permissions again") { speech.refreshPermissions() }.buttonStyle(.borderless)
+        }.padding(.vertical, 12)
+    }
+
+    private func permissionRow(_ title: String, description: String, granted: Bool, action: @escaping () -> Void) -> some View {
+        HStack(spacing: 12) {
+            Image(systemName: granted ? "checkmark.circle.fill" : "circle").foregroundStyle(granted ? Phos.green : Phos.amber)
+            VStack(alignment: .leading, spacing: 3) { Text(title).font(.system(size: 13, weight: .medium)); Text(description).font(.system(size: 11)).foregroundStyle(.secondary) }
+            Spacer()
+            if !granted { Button("Allow", action: action).controlSize(.small) }
+        }
+    }
+
+    private var settingsView: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 15) {
+                Text("DICTATION").font(.system(size: 10, weight: .semibold)).foregroundStyle(.secondary)
+                Picker("Language", selection: $speech.languageIdentifier) {
+                    ForEach(speech.languages, id: \.identifier) { locale in Text(locale.localizedName).tag(locale.identifier) }
+                }.disabled(speech.isBusy)
+                Text(speech.localRecognitionAvailable ? "Local recognition is available." : "This language needs an installed on-device model. No cloud fallback is used.")
+                    .font(.system(size: 11)).foregroundStyle(speech.localRecognitionAvailable ? .secondary : Color.orange)
+                Toggle("Paste automatically", isOn: $speech.autoPaste)
+                Toggle("Press Return after paste", isOn: $speech.autoSubmit).disabled(!speech.autoPaste)
+                Text("Return can send a message or run a terminal command. It is sent only while the original field remains focused.")
+                    .font(.system(size: 11)).foregroundStyle(.secondary)
+                Text("Names and technical terms").font(.system(size: 12, weight: .medium))
+                TextEditor(text: $speech.vocabulary).font(.system(size: 12)).frame(height: 60).disabled(speech.isBusy)
+                    .overlay(RoundedRectangle(cornerRadius: 5).stroke(.white.opacity(0.15)))
+                    .accessibilityLabel("Vocabulary, one phrase per line")
+                Text("One phrase per line. These hints stay on this Mac.").font(.system(size: 11)).foregroundStyle(.secondary)
+                Divider()
+                Text("PRIVACY").font(.system(size: 10, weight: .semibold)).foregroundStyle(.secondary)
+                Toggle("Save local history", isOn: $speech.saveHistory)
+                if speech.saveHistory {
+                    Picker("Keep history", selection: $speech.historyRetentionDays) {
+                        Text("1 day").tag(1); Text("7 days").tag(7); Text("30 days").tag(30); Text("Until I delete it").tag(0)
                     }
                 }
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, 2)
-            .padding(.vertical, 4)
-        }
-        .frame(height: 240)
-        .mask(edgeFade)
+                Toggle("Write latest transcript for scripts", isOn: $speech.writeLatestTranscript)
+                Text("History is local and unencrypted. Automation writes ~/.talky/voice_input.txt. Clipboard contents can be read by other apps.")
+                Text("Turning history off stops new saves. Delete saved records in History. Exports and clipboard copies are separate.")
+                    .font(.system(size: 11)).foregroundStyle(.secondary)
+                    .font(.system(size: 11)).foregroundStyle(.secondary)
+                Divider()
+                Toggle("Launch at login", isOn: Binding(get: { speech.launchAtLogin }, set: speech.setLaunchAtLogin))
+                if !speech.shortcutAvailable { Text("Option-Space is already in use. The record button still works.").font(.system(size: 11)).foregroundStyle(Phos.amber) }
+                if !speech.accessibilityAllowed { Button("Open Accessibility settings") { speech.requestAccessibilityPermission() }.buttonStyle(.borderless) }
+            }.font(.system(size: 13)).padding(.vertical, 4)
+        }.frame(maxHeight: 420)
     }
 
-    // Soft top/bottom edge fade so long text dissolves instead of hard-clipping.
-    private var edgeFade: some View {
-        LinearGradient(stops: [
-            .init(color: .clear, location: 0.0),
-            .init(color: .black, location: 0.08),
-            .init(color: .black, location: 0.92),
-            .init(color: .clear, location: 1.0),
-        ], startPoint: .top, endPoint: .bottom)
-    }
-
-    // MARK: Status
-
-    private var statusLine: some View {
-        Text("> " + speech.statusMessage)
-            .font(.system(size: 11, weight: .medium, design: .monospaced))
-            .foregroundStyle(statusColor)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .animation(.easeInOut(duration: 0.2), value: speech.statusMessage)
-            .padding(.top, 4)
-    }
-
-    private var statusColor: Color {
-        switch speech.phase {
-        case .denied, .unavailable: return Phos.amber
-        default:                    return Phos.green.opacity(0.8)
-        }
-    }
-
-    // MARK: Background
-
-    private var panelBackground: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 16, style: .continuous).fill(Color.black)
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(RadialGradient(colors: [Phos.green.opacity(0.06), .clear],
-                                     center: .center, startRadius: 0, endRadius: 260))
-            scanlines
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .strokeBorder(Phos.green.opacity(0.55), lineWidth: 1)
-                .shadow(color: Phos.green.opacity(0.4), radius: 6)
+    private var historyView: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            TextField("Search history", text: $historySearch).textFieldStyle(.roundedBorder)
+            HStack {
+                Button("Export") { speech.exportHistory() }.disabled(historyItems.isEmpty)
+                Spacer()
+                Button("Delete history", role: .destructive) { confirmClearHistory = true }.disabled(historyItems.isEmpty)
+            }.controlSize(.small)
+            ScrollView {
+                LazyVStack(alignment: .leading, spacing: 16) {
+                    if historyItems.isEmpty {
+                        Text(speech.saveHistory ? "No saved dictations yet." : "History is off. Enable it in Settings if you want to save dictations.")
+                            .font(.system(size: 13)).foregroundStyle(.secondary).padding(.vertical, 20)
+                    }
+                    ForEach(historyItems.filter { historySearch.isEmpty || $0.text.localizedCaseInsensitiveContains(historySearch) || $0.date.localizedCaseInsensitiveContains(historySearch) }) { item in
+                        VStack(alignment: .leading, spacing: 5) {
+                            HStack { Text(item.date + " · " + item.time).font(.system(size: 10)).foregroundStyle(.secondary); Spacer(); Button { speech.copy(item.text) } label: { Image(systemName: "doc.on.doc") }.buttonStyle(.borderless).accessibilityLabel("Copy dictation") }
+                            Text(item.text).font(.system(size: 13)).textSelection(.enabled).frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                    }
+                }
+            }.frame(maxHeight: 345)
         }
     }
 
-    // Faint CRT scanline texture.
-    private var scanlines: some View {
-        Canvas { ctx, size in
-            var y: CGFloat = 0
-            while y < size.height {
-                ctx.fill(Path(CGRect(x: 0, y: y, width: size.width, height: 1)),
-                         with: .color(Phos.green.opacity(0.05)))
-                y += 3
+    private var captureControls: some View {
+        HStack(spacing: 10) {
+            Button { speech.toggle() } label: {
+                Label(speech.isListening ? "Stop dictation" : speech.phase == .processing ? "Finishing..." : "Start dictation",
+                      systemImage: speech.isListening ? "stop.fill" : "mic.fill")
+                    .frame(maxWidth: .infinity).padding(.vertical, 7)
+            }.buttonStyle(.borderedProminent).tint(Phos.green).foregroundStyle(.black)
+                .disabled(speech.phase == .processing || speech.needsSetup)
+                .accessibilityHint("Option-Space")
+            if speech.isBusy {
+                Button("Cancel") { speech.cancel() }.buttonStyle(.bordered).keyboardShortcut(.cancelAction)
+                    .help("Discard without copying or sending: Option-Escape")
             }
         }
-        .allowsHitTesting(false)
-        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
     }
 
-    private var placeholder: String {
-        switch speech.phase {
-        case .denied:      return "allow Speech access in Settings"
-        case .unavailable: return "speech recognition unavailable"
-        case .processing:  return "transcribing…"
-        case .listening:   return "listening…"
-        default:           return "tap, or press ⌥Space, to dictate"
-        }
+    private var statusColor: Color { speech.phase == .denied || speech.phase == .unavailable ? Phos.amber : .secondary }
+    private var background: some View {
+        RoundedRectangle(cornerRadius: 18).fill(.ultraThinMaterial)
+            .overlay(RoundedRectangle(cornerRadius: 18).fill(.black.opacity(0.65)))
+            .overlay(RoundedRectangle(cornerRadius: 18).stroke(Phos.green.opacity(speech.isListening ? 0.7 : 0.25), lineWidth: 1))
     }
 }
 
-// MARK: - Waveform — audio-reactive phosphor equalizer
+// MARK: - Waveform. audio-reactive phosphor equalizer
 
 // Clean 5-bar mini waveform for the compact widget; reacts to the mic level.
 struct MiniWaveform: View {
@@ -619,588 +495,1063 @@ struct Waveform: View {
     private var barColor: Color { muted ? Color(hex: 0x2A6B22) : Phos.green }
 }
 
+// MARK: - Recognition lifecycle core BEGIN
+
+/// Keeps every segment in capture order while older recognition sessions drain.
+/// Audio and timers stay in SpeechManager. This value owns transcript state only.
+nonisolated struct RecognitionLifecycle {
+    struct Token: Hashable {
+        let capture: Int
+        let segment: Int
+    }
+
+    private struct Segment {
+        var text = ""
+        var complete = false
+    }
+
+    private(set) var capture = 0
+    private(set) var activeToken: Token?
+    private(set) var isStopping = false
+    private var isActive = false
+    private var nextSegment = 0
+    private var segments: [Int: Segment] = [:]
+
+    var transcript: String {
+        segments.keys.sorted().compactMap { key in
+            let text = segments[key]?.text.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            return text.isEmpty ? nil : text
+        }.joined(separator: " ")
+    }
+
+    var canFinalize: Bool {
+        isActive && isStopping && segments.values.allSatisfy { $0.complete }
+    }
+
+    @discardableResult
+    mutating func beginCapture() -> Int {
+        capture += 1
+        isActive = true
+        isStopping = false
+        activeToken = nil
+        nextSegment = 0
+        segments.removeAll(keepingCapacity: true)
+        return capture
+    }
+
+    mutating func beginSegment() -> Token? {
+        guard isActive && !isStopping else { return nil }
+        nextSegment += 1
+        let token = Token(capture: capture, segment: nextSegment)
+        segments[token.segment] = Segment()
+        activeToken = token
+        return token
+    }
+
+    @discardableResult
+    mutating func receive(_ text: String?, isFinal: Bool, failed: Bool, token: Token) -> Bool {
+        guard isActive, token.capture == capture,
+              var segment = segments[token.segment], !segment.complete else { return false }
+        if let text { segment.text = text }
+        if isFinal || failed { segment.complete = true }
+        segments[token.segment] = segment
+        return true
+    }
+
+    @discardableResult
+    mutating func stop(capture: Int) -> Bool {
+        guard isActive, capture == self.capture, !isStopping else { return false }
+        isStopping = true
+        return true
+    }
+
+    /// The caller waits for canFinalize or its capture-specific deadline first.
+    mutating func finish(capture: Int) -> String? {
+        guard isActive, capture == self.capture, isStopping else { return nil }
+        let result = transcript
+        isActive = false
+        isStopping = false
+        activeToken = nil
+        return result
+    }
+
+    @discardableResult
+    mutating func cancel(capture: Int) -> Bool {
+        guard isActive, capture == self.capture else { return false }
+        isActive = false
+        isStopping = false
+        activeToken = nil
+        segments.removeAll(keepingCapacity: true)
+        return true
+    }
+}
+
+// MARK: - Recognition lifecycle core END
+
+// MARK: - Product core BEGIN
+
+nonisolated enum TalkyStorageError: LocalizedError {
+    case unsafePath(String)
+    var errorDescription: String? {
+        switch self {
+        case .unsafePath(let name): return "Cannot use \(name): expected a private, regular file or directory."
+        }
+    }
+}
+
+/// Local files stay private even when the process has a permissive umask.
+nonisolated struct TalkyStore {
+    let root: URL
+    init(root: URL = TalkyStore.defaultRoot) {
+        self.root = root
+    }
+
+    static var defaultRoot: URL {
+        if let path = ProcessInfo.processInfo.environment["TALKY_DATA_DIR"], path.hasPrefix("/") {
+            return URL(fileURLWithPath: path, isDirectory: true)
+        }
+        return FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent(".talky")
+    }
+
+    func prepare() throws {
+        try directory(root)
+        for name in ["voice_input.txt", "talky_cmd"] {
+            let url = root.appendingPathComponent(name)
+            if FileManager.default.fileExists(atPath: url.path) { try regularFile(url) }
+        }
+        let history = root.appendingPathComponent("voice_history")
+        if FileManager.default.fileExists(atPath: history.path) {
+            try directory(history)
+            for url in try FileManager.default.contentsOfDirectory(at: history, includingPropertiesForKeys: nil) {
+                if ["md", "jsonl"].contains(url.pathExtension) { try regularFile(url) }
+            }
+        }
+    }
+
+    func directory(_ url: URL) throws {
+        let manager = FileManager.default
+        if let attributes = try? manager.attributesOfItem(atPath: url.path) {
+            guard attributes[.type] as? FileAttributeType == .typeDirectory,
+                  (attributes[.ownerAccountID] as? NSNumber)?.uint32Value == getuid() else {
+                throw TalkyStorageError.unsafePath(url.lastPathComponent)
+            }
+        } else {
+            try manager.createDirectory(at: url, withIntermediateDirectories: false,
+                                        attributes: [.posixPermissions: 0o700])
+        }
+        try privatePermissions(url, mode: 0o700)
+    }
+
+    func regularFile(_ url: URL) throws {
+        let attributes = try FileManager.default.attributesOfItem(atPath: url.path)
+        guard attributes[.type] as? FileAttributeType == .typeRegular,
+              (attributes[.ownerAccountID] as? NSNumber)?.uint32Value == getuid() else {
+            throw TalkyStorageError.unsafePath(url.lastPathComponent)
+        }
+        try privatePermissions(url, mode: 0o600)
+    }
+
+    private func privatePermissions(_ url: URL, mode: Int) throws {
+        try FileManager.default.setAttributes([.posixPermissions: mode], ofItemAtPath: url.path)
+        guard let acl = acl_init(0) else { throw NSError(domain: NSPOSIXErrorDomain, code: Int(errno)) }
+        defer { acl_free(UnsafeMutableRawPointer(acl)) }
+        guard acl_set_file(url.path, ACL_TYPE_EXTENDED, acl) == 0 else {
+            throw NSError(domain: NSPOSIXErrorDomain, code: Int(errno))
+        }
+    }
+
+    func write(_ data: Data, to url: URL) throws {
+        try directory(root)
+        if FileManager.default.fileExists(atPath: url.path) { try regularFile(url) }
+        try data.write(to: url, options: .atomic)
+        try regularFile(url)
+    }
+
+    func writeLatest(_ text: String) throws {
+        try write(Data(text.utf8), to: root.appendingPathComponent("voice_input.txt"))
+    }
+
+    /// Clear inherited ACLs before any exported transcript reaches the file.
+    func export(_ data: Data, to url: URL) throws {
+        if FileManager.default.fileExists(atPath: url.path) { try regularFile(url) }
+        var template = Array(url.deletingLastPathComponent().appendingPathComponent(".Talky-export-XXXXXX").path.utf8CString)
+        let descriptor = mkstemp(&template)
+        guard descriptor >= 0 else { throw NSError(domain: NSPOSIXErrorDomain, code: Int(errno)) }
+        let temporaryPath = String(cString: template)
+        defer { close(descriptor); unlink(temporaryPath) }
+        guard fchmod(descriptor, 0o600) == 0, let acl = acl_init(0) else {
+            throw NSError(domain: NSPOSIXErrorDomain, code: Int(errno))
+        }
+        defer { acl_free(UnsafeMutableRawPointer(acl)) }
+        guard acl_set_fd(descriptor, acl) == 0 else { throw NSError(domain: NSPOSIXErrorDomain, code: Int(errno)) }
+        let handle = FileHandle(fileDescriptor: descriptor, closeOnDealloc: false)
+        try handle.write(contentsOf: data)
+        guard fsync(descriptor) == 0, rename(temporaryPath, url.path) == 0 else {
+            throw NSError(domain: NSPOSIXErrorDomain, code: Int(errno))
+        }
+    }
+
+    func removeLatest() throws {
+        let url = root.appendingPathComponent("voice_input.txt")
+        if FileManager.default.fileExists(atPath: url.path) {
+            try regularFile(url)
+            try FileManager.default.removeItem(at: url)
+        }
+    }
+
+    func consumeCommand() throws -> String? {
+        let url = root.appendingPathComponent("talky_cmd")
+        guard FileManager.default.fileExists(atPath: url.path) else { return nil }
+        try regularFile(url)
+        let attributes = try FileManager.default.attributesOfItem(atPath: url.path)
+        guard (attributes[.size] as? NSNumber)?.intValue ?? 0 <= 1024 else {
+            throw TalkyStorageError.unsafePath("talky_cmd")
+        }
+        let value = try String(contentsOf: url, encoding: .utf8).trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !value.isEmpty else { return nil }
+        try write(Data(), to: url)
+        return value
+    }
+
+    func appendHistory(_ record: TalkyHistoryRecord) throws {
+        let dir = root.appendingPathComponent("voice_history")
+        try directory(root)
+        try directory(dir)
+        let file = dir.appendingPathComponent(String(record.createdAt.prefix(10)) + ".jsonl")
+        let encoder = JSONEncoder()
+        var data = try encoder.encode(record)
+        data.append(0x0a)
+        if FileManager.default.fileExists(atPath: file.path) {
+            try regularFile(file)
+            let handle = try FileHandle(forWritingTo: file)
+            defer { try? handle.close() }
+            try handle.seekToEnd()
+            try handle.write(contentsOf: data)
+        } else {
+            try write(data, to: file)
+        }
+    }
+
+    func historyFiles() throws -> [URL] {
+        let dir = root.appendingPathComponent("voice_history")
+        guard FileManager.default.fileExists(atPath: dir.path) else { return [] }
+        try directory(dir)
+        return try FileManager.default.contentsOfDirectory(at: dir, includingPropertiesForKeys: nil)
+            .filter { ["jsonl", "md"].contains($0.pathExtension) }
+            .sorted { $0.lastPathComponent > $1.lastPathComponent }
+    }
+
+    func loadRecords() throws -> [TalkyHistoryRecord] {
+        var records: [TalkyHistoryRecord] = []
+        for url in try historyFiles() {
+            try regularFile(url)
+            let content = try String(contentsOf: url, encoding: .utf8)
+            if url.pathExtension == "jsonl" {
+                for line in content.split(separator: "\n") {
+                    if let record = try? JSONDecoder().decode(TalkyHistoryRecord.self, from: Data(line.utf8)) {
+                        records.append(record)
+                    }
+                }
+            } else {
+                records.append(contentsOf: TalkyHistoryRecord.parseLegacy(content, day: url.deletingPathExtension().lastPathComponent))
+            }
+        }
+        return records.sorted { ($0.timestamp ?? .distantPast) > ($1.timestamp ?? .distantPast) }
+    }
+
+    func pruneHistory(olderThan cutoff: Date) throws {
+        for url in try historyFiles() {
+            try regularFile(url)
+            let content = try String(contentsOf: url, encoding: .utf8)
+            if url.pathExtension == "jsonl" {
+                let lines = try content.split(separator: "\n").filter { line in
+                    let record = try JSONDecoder().decode(TalkyHistoryRecord.self, from: Data(line.utf8))
+                    return record.timestamp.map { $0 >= cutoff } ?? true
+                }
+                if lines.isEmpty { try FileManager.default.removeItem(at: url) }
+                else { try write(Data((lines.joined(separator: "\n") + "\n").utf8), to: url) }
+            } else {
+                let records = TalkyHistoryRecord.parseLegacy(content, day: url.deletingPathExtension().lastPathComponent)
+                let retained = records.filter { $0.timestamp.map { $0 >= cutoff } ?? true }
+                guard retained.count != records.count else { continue }
+                if retained.isEmpty { try FileManager.default.removeItem(at: url) }
+                else {
+                    let day = url.deletingPathExtension().lastPathComponent
+                    let text = "# Voice history " + day + "\n\n" + retained.map {
+                        "## " + String($0.createdAt.dropFirst(11)) + "\n" + $0.text + "\n"
+                    }.joined(separator: "\n")
+                    try write(Data(text.utf8), to: url)
+                }
+            }
+        }
+    }
+
+    func clearHistory() throws {
+        for url in try historyFiles() {
+            try regularFile(url)
+            try FileManager.default.removeItem(at: url)
+        }
+    }
+
+    func writeTestResult(_ result: TalkyTestResult) throws {
+        let dir = root.appendingPathComponent("test-results")
+        try directory(root)
+        try directory(dir)
+        let data = try JSONEncoder().encode(result)
+        try write(data, to: dir.appendingPathComponent(result.runID + ".json"))
+    }
+}
+
+nonisolated struct TalkyHistoryRecord: Codable {
+    let id: String
+    let createdAt: String
+    let text: String
+    let language: String
+
+    init(text: String, language: String, now: Date = Date()) {
+        id = UUID().uuidString
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        createdAt = formatter.string(from: now)
+        self.text = text
+        self.language = language
+    }
+
+    var timestamp: Date? {
+        let iso = ISO8601DateFormatter()
+        iso.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        if let date = iso.date(from: createdAt) { return date }
+        iso.formatOptions = [.withInternetDateTime]
+        if let date = iso.date(from: createdAt) { return date }
+        let legacy = DateFormatter()
+        legacy.locale = Locale(identifier: "en_US_POSIX")
+        legacy.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
+        return legacy.date(from: createdAt)
+    }
+
+    private init(id: String, createdAt: String, text: String, language: String) {
+        self.id = id; self.createdAt = createdAt; self.text = text; self.language = language
+    }
+
+    static func parseLegacy(_ content: String, day: String) -> [TalkyHistoryRecord] {
+        var records: [TalkyHistoryRecord] = []
+        var time: String?
+        var lines: [String] = []
+        func flush() {
+            let text = lines.joined(separator: "\n").trimmingCharacters(in: .whitespacesAndNewlines)
+            if let time, !text.isEmpty {
+                records.append(TalkyHistoryRecord(id: "\(day)-\(time)-\(records.count)",
+                    createdAt: day + "T" + time, text: text, language: "en-US"))
+            }
+            time = nil; lines = []
+        }
+        for line in content.components(separatedBy: "\n") {
+            if line.hasPrefix("## "), line.dropFirst(3).range(of: #"^\d{2}:\d{2}:\d{2}$"#, options: .regularExpression) != nil {
+                flush(); time = String(line.dropFirst(3))
+            } else if line.hasPrefix("# Voice history") { flush() }
+            else if time != nil { lines.append(line) }
+        }
+        flush()
+        return records
+    }
+}
+
+nonisolated struct TalkyTestResult: Codable {
+    let runID: String
+    let phase: String
+    let transcript: String
+    let error: String?
+    let startedAt: String
+    let finishedAt: String?
+    let microphone: String
+}
+
+nonisolated struct DeliverySafety {
+    let trusted: Bool
+    let targetAlive: Bool
+    let sameApplication: Bool
+    let sameElement: Bool
+    let clipboardUnchanged: Bool
+    let secureField: Bool
+
+    var blockedReason: String? {
+        if !trusted { return "Enable Accessibility to paste" }
+        if !targetAlive { return "The original app closed" }
+        if !sameApplication { return "Focus moved to another app" }
+        if !sameElement { return "The original text field changed" }
+        if !clipboardUnchanged { return "The clipboard changed" }
+        if secureField { return "The original field is protected" }
+        return nil
+    }
+}
+// MARK: - Product core END
+
 // MARK: - Speech manager
 
-/// Holds the current recognition request so the audio tap (which runs off the
-/// main actor) can append to whichever session is live, even as long dictations
-/// renew the underlying request. Pointer swap only; safe enough for audio.
-final class AudioRequestBox: @unchecked Sendable {
-    var request: SFSpeechAudioBufferRecognitionRequest?
+/// Every append and swap shares one lock, including reference ownership.
+nonisolated final class AudioRequestBox: @unchecked Sendable {
+    private let lock = NSLock()
+    private var request: SFSpeechAudioBufferRecognitionRequest?
+
+    func append(_ buffer: AVAudioPCMBuffer) {
+        lock.lock(); defer { lock.unlock() }
+        request?.append(buffer)
+    }
+
+    @discardableResult
+    func replace(with next: SFSpeechAudioBufferRecognitionRequest?) -> SFSpeechAudioBufferRecognitionRequest? {
+        lock.lock(); defer { lock.unlock() }
+        let old = request
+        request = next
+        return old
+    }
 }
 
 @MainActor
 final class SpeechManager: ObservableObject {
     enum Phase { case idle, listening, processing, denied, unavailable }
-
     @Published private(set) var transcribedText = ""
     @Published private(set) var phase: Phase = .idle
-    @Published private(set) var statusMessage = "Tap to speak"
+    @Published private(set) var statusMessage = "Option-Space to dictate"
     @Published private(set) var audioLevel: CGFloat = 0
-
-    /// Compact "presence" vs full panel. User-controlled (maximize / minimize);
-    /// dictation works in either size. The window resizes to match.
     @Published var expanded = false
-
-    /// Recent audio levels, scrolling right, that drive the waveform bars.
     static let barCount = 27
-    @Published private(set) var levels: [CGFloat] = Array(repeating: 0, count: SpeechManager.barCount)
+    @Published private(set) var levels: [CGFloat] = Array(repeating: 0, count: barCount)
+    @Published private(set) var speechAllowed = false
+    @Published private(set) var microphoneAllowed = false
+    @Published private(set) var accessibilityAllowed = false
+    @Published private(set) var localRecognitionAvailable = false
+    @Published private(set) var launchAtLogin = SMAppService.mainApp.status == .enabled
+    @Published var shortcutAvailable = true
 
-    /// When on, presses Return after pasting so the text is submitted (e.g. runs
-    /// in a terminal). Persisted across launches.
-    @Published var autoSubmit: Bool = UserDefaults.standard.object(forKey: "autoSubmit") as? Bool ?? false {
+    @Published var autoPaste = UserDefaults.standard.object(forKey: "autoPaste") as? Bool ?? true {
+        didSet { UserDefaults.standard.set(autoPaste, forKey: "autoPaste"); if !autoPaste { autoSubmit = false } }
+    }
+    @Published var autoSubmit = UserDefaults.standard.object(forKey: "autoSubmit") as? Bool ?? false {
         didSet { UserDefaults.standard.set(autoSubmit, forKey: "autoSubmit") }
+    }
+    @Published var saveHistory = UserDefaults.standard.object(forKey: "saveHistory") as? Bool ?? false {
+        didSet { UserDefaults.standard.set(saveHistory, forKey: "saveHistory"); pruneHistory() }
+    }
+    @Published var historyRetentionDays = UserDefaults.standard.object(forKey: "historyRetentionDays") as? Int ?? 7 {
+        didSet { UserDefaults.standard.set(historyRetentionDays, forKey: "historyRetentionDays"); pruneHistory() }
+    }
+    @Published var writeLatestTranscript = UserDefaults.standard.object(forKey: "writeLatestTranscript") as? Bool ?? false {
+        didSet {
+            UserDefaults.standard.set(writeLatestTranscript, forKey: "writeLatestTranscript")
+            if !writeLatestTranscript {
+                do { try store.removeLatest() } catch { statusMessage = error.localizedDescription }
+            }
+        }
+    }
+    @Published var languageIdentifier = UserDefaults.standard.string(forKey: "languageIdentifier") ?? "en-US" {
+        didSet { UserDefaults.standard.set(languageIdentifier, forKey: "languageIdentifier"); configureRecognizer() }
+    }
+    @Published var vocabulary = UserDefaults.standard.string(forKey: "vocabulary") ?? "" {
+        didSet { UserDefaults.standard.set(vocabulary, forKey: "vocabulary") }
     }
 
     var isListening: Bool { phase == .listening }
+    var isBusy: Bool { phase == .listening || phase == .processing }
+    var needsSetup: Bool { !speechAllowed || !microphoneAllowed }
+    var languages: [Locale] { SFSpeechRecognizer.supportedLocales().sorted { $0.localizedName < $1.localizedName } }
+    var languageName: String { Locale(identifier: languageIdentifier).localizedName }
+    var microphoneName: String { captureMicrophoneName ?? Self.systemInputName() ?? "System microphone" }
 
-    private let recognizer = SFSpeechRecognizer(locale: Locale(identifier: "en-US"))
-    private var request: SFSpeechAudioBufferRecognitionRequest?
-    private var task: SFSpeechRecognitionTask?
+    private var recognizer: SFSpeechRecognizer?
     private let audioEngine = AVAudioEngine()
     private let requestBox = AudioRequestBox()
-    private var committedText = ""               // text from finished recognition segments
-    private var sessionStartedAt: Date?          // current session start, for pause-aligned renewal
-    private var sessionGen = 0                   // ignores callbacks from superseded sessions
-    private var warmedUp = false                 // on-device model preloaded?
-    private var failureRenewals = 0              // guards against an endless error→renew loop
-    private var tapInstalled = false
-    private var didFinalize = true
-    private var peakLevel: CGFloat = 0   // loudest level heard this session
-    private var targetApp: NSRunningApplication?   // where text should land
-
-    // MARK: Command file (Hermes / scripts can write start|stop|toggle)
-
+    private var lifecycle = RecognitionLifecycle()
+    private struct Segment {
+        let request: SFSpeechAudioBufferRecognitionRequest
+        let task: SFSpeechRecognitionTask
+    }
+    private var segments: [RecognitionLifecycle.Token: Segment] = [:]
+    private var drainDeadlines: [RecognitionLifecycle.Token: Task<Void, Never>] = [:]
+    private var stopDeadline: Task<Void, Never>?
+    private var deliveryTask: Task<Void, Never>?
     private var commandTimer: Timer?
+    private var audioConfigurationObserver: NSObjectProtocol?
+    private var sleepObserver: NSObjectProtocol?
+    private var sessionStartedAt: Date?
+    private var consecutiveFailures = 0
+    private var totalFailures = 0
+    private var tapInstalled = false
+    private var peakLevel: CGFloat = 0
+    private var targetApp: NSRunningApplication?
+    private var targetElement: AXUIElement?
+    private var targetWasSecure = false
+    private var testRunID: String?
+    private var captureStartedAt = Date()
+    private let store = TalkyStore()
+    private var storageProblem: String?
+    private var captureProblem: String?
+    private var captureMicrophoneName: String?
+    private var showingAvailabilityProblem = false
 
-    func startCommandWatcher() {
-        let url = FileManager.default.homeDirectoryForCurrentUser
-            .appendingPathComponent(".talky/talky_cmd")
-        commandTimer = Timer.scheduledTimer(withTimeInterval: 0.4, repeats: true) { [weak self] _ in
-            guard let raw = try? String(contentsOf: url, encoding: .utf8) else { return }
-            let cmd = raw.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
-            guard !cmd.isEmpty else { return }
-            try? "".write(to: url, atomically: true, encoding: .utf8)   // consume
-            Task { @MainActor in
-                guard let self else { return }
-                switch cmd {
-                case "start":  if !self.isListening { self.toggle() }
-                case "stop":   if self.isListening { self.toggle() }
-                case "toggle": self.toggle()
-                default:       break
-                }
-            }
-        }
-    }
-
-    // MARK: Permissions
-
-    func requestPermissions() {
-        // If a system prompt is about to appear, drop the always-on-top panel so
-        // the dialog isn't hidden behind it.
-        if SFSpeechRecognizer.authorizationStatus() == .notDetermined {
-            PanelChrome.dropForPrompt()
-        }
-        SFSpeechRecognizer.requestAuthorization { status in
+    init() {
+        configureRecognizer()
+        do { try store.prepare() } catch { storageProblem = error.localizedDescription }
+        refreshPermissions()
+        pruneHistory()
+        audioConfigurationObserver = NotificationCenter.default.addObserver(
+            forName: .AVAudioEngineConfigurationChange, object: audioEngine, queue: nil
+        ) { [weak self] _ in
             Task { @MainActor [weak self] in
-                guard let self else { return }
-                switch status {
-                case .authorized:
-                    if self.recognizer?.isAvailable == true {
-                        self.phase = .idle
-                        self.statusMessage = "Tap to speak"
-                        self.warmUpRecognizer()
-                    } else {
-                        self.phase = .unavailable
-                        self.statusMessage = "Recognition unavailable"
-                    }
-                case .denied, .restricted:
-                    self.phase = .denied
-                    self.statusMessage = "Allow Speech Recognition in Settings"
-                case .notDetermined:
-                    self.statusMessage = "Awaiting permission…"
-                @unknown default:
-                    self.phase = .unavailable
-                    self.statusMessage = "Recognition unavailable"
-                }
+                guard let self, self.phase == .listening, !self.audioEngine.isRunning else { return }
+                self.interruptCapture("Audio input changed. Copied the available transcript. Start again when ready.")
+            }
+        }
+        sleepObserver = NSWorkspace.shared.notificationCenter.addObserver(
+            forName: NSWorkspace.willSleepNotification, object: nil, queue: .main
+        ) { [weak self] _ in
+            MainActor.assumeIsolated {
+                self?.interruptCapture("Recording stopped for sleep. Copied the available transcript.")
             }
         }
     }
 
-    // MARK: Control
+    func prepare() {
+        refreshPermissions()
+        if needsSetup { expanded = true }
+    }
+
+    func refreshPermissions() {
+        speechAllowed = SFSpeechRecognizer.authorizationStatus() == .authorized
+        microphoneAllowed = AVCaptureDevice.authorizationStatus(for: .audio) == .authorized
+        accessibilityAllowed = Paster.isTrusted
+        localRecognitionAvailable = recognizer?.supportsOnDeviceRecognition == true && recognizer?.isAvailable == true
+        guard !isBusy else { return }
+        if needsSetup {
+            showingAvailabilityProblem = true
+            phase = .denied
+            statusMessage = "Set up microphone and speech access"
+        } else if !localRecognitionAvailable {
+            showingAvailabilityProblem = true
+            phase = .unavailable
+            statusMessage = "On-device recognition unavailable for \(languageName)"
+        } else if showingAvailabilityProblem {
+            showingAvailabilityProblem = false
+            phase = .idle
+            statusMessage = "Option-Space to dictate"
+        }
+    }
+
+    func requestSpeechPermission() {
+        if SFSpeechRecognizer.authorizationStatus() == .denied || SFSpeechRecognizer.authorizationStatus() == .restricted {
+            openPrivacySettings("SpeechRecognition"); return
+        }
+        PanelChrome.dropForPrompt()
+        SFSpeechRecognizer.requestAuthorization { [weak self] _ in
+            Task { @MainActor in self?.refreshPermissions() }
+        }
+    }
+
+    func requestMicrophonePermission() {
+        if AVCaptureDevice.authorizationStatus(for: .audio) == .denied || AVCaptureDevice.authorizationStatus(for: .audio) == .restricted {
+            openPrivacySettings("Microphone"); return
+        }
+        PanelChrome.dropForPrompt()
+        AVCaptureDevice.requestAccess(for: .audio) { [weak self] _ in
+            Task { @MainActor in self?.refreshPermissions() }
+        }
+    }
+
+    func requestAccessibilityPermission() {
+        PanelChrome.dropForPrompt()
+        _ = Paster.requestTrust()
+        openPrivacySettings("Accessibility")
+    }
+
+    private func openPrivacySettings(_ pane: String) {
+        guard let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_" + pane) else { return }
+        PanelChrome.dropForPrompt()
+        NSWorkspace.shared.open(url)
+    }
+
+    func setLaunchAtLogin(_ enabled: Bool) {
+        do {
+            if enabled { try SMAppService.mainApp.register() }
+            else { try SMAppService.mainApp.unregister() }
+            launchAtLogin = SMAppService.mainApp.status == .enabled
+            if enabled && !launchAtLogin {
+                SMAppService.openSystemSettingsLoginItems()
+                statusMessage = "Approve Talky in Login Items"
+            }
+        } catch { statusMessage = "Login item: \(error.localizedDescription)" }
+    }
+
+    private func configureRecognizer() {
+        guard !isBusy else { return }
+        recognizer = SFSpeechRecognizer(locale: Locale(identifier: languageIdentifier))
+        recognizer?.queue = .main
+        refreshPermissions()
+    }
 
     func toggle() {
         switch phase {
-        case .listening:  stop()
+        case .listening: stop()
         case .processing: break
-        default:          start()
+        default: start()
         }
     }
 
+    func cancel() {
+        guard isBusy else { return }
+        let capture = lifecycle.capture
+        stopDeadline?.cancel(); stopDeadline = nil
+        deliveryTask?.cancel(); deliveryTask = nil
+        teardownAudio()
+        requestBox.replace(with: nil)?.endAudio()
+        cancelSegments()
+        _ = lifecycle.cancel(capture: capture)
+        transcribedText = ""
+        phase = .idle
+        flattenLevels()
+        statusMessage = "Cancelled. Nothing was copied or sent."
+        writeTestState("cancelled", error: nil)
+        testRunID = nil
+    }
 
-    private func start() {
-        guard let recognizer, recognizer.isAvailable else {
-            phase = .unavailable
-            statusMessage = "Recognition unavailable"
+    private func interruptCapture(_ message: String) {
+        deliveryTask?.cancel(); deliveryTask = nil
+        guard isBusy else { return }
+        captureProblem = message
+        if phase == .listening { stop(problem: message) }
+        else { statusMessage = message }
+    }
+
+    private func start(testID: String? = nil) {
+        guard !isBusy else {
+            if let testID {
+                let now = ISO8601DateFormatter().string(from: Date())
+                try? store.writeTestResult(TalkyTestResult(runID: testID, phase: "failed", transcript: "",
+                    error: "Another capture is already active", startedAt: now, finishedAt: now, microphone: microphoneName))
+            }
             return
         }
-
-        teardownAudio()   // ensure the mic isn't already held
-
-        // Reset state for a fresh capture.
+        deliveryTask?.cancel(); deliveryTask = nil
+        testRunID = testID
+        captureStartedAt = Date()
         transcribedText = ""
-        committedText = ""
-        didFinalize = false
-        failureRenewals = 0
-        peakLevel = 0
-        flattenLevels()
-        // Remember which app was frontmost NOW, before any focus shift, so we insert
-        // the text back into it rather than wherever focus ends up later.
-        targetApp = NSWorkspace.shared.frontmostApplication
-
-        // First mic use triggers the system microphone prompt — make room for it.
-        if AVCaptureDevice.authorizationStatus(for: .audio) == .notDetermined {
-            PanelChrome.dropForPrompt()
+        captureProblem = nil
+        captureMicrophoneName = nil
+        refreshPermissions()
+        guard speechAllowed, microphoneAllowed else {
+            expanded = true
+            statusMessage = "Allow microphone and speech access, then try again"
+            writeTestState("failed", error: statusMessage)
+            testRunID = nil
+            return
         }
+        guard let recognizer, recognizer.supportsOnDeviceRecognition, recognizer.isAvailable else {
+            phase = .unavailable
+            statusMessage = "Local speech model unavailable. Choose another language in Settings."
+            expanded = true
+            writeTestState("failed", error: statusMessage)
+            testRunID = nil
+            return
+        }
+        deliveryTask?.cancel(); deliveryTask = nil
+        stopDeadline?.cancel(); stopDeadline = nil
+        teardownAudio()
+        cancelSegments()
+        let capture = lifecycle.beginCapture()
+        transcribedText = ""
+        consecutiveFailures = 0; totalFailures = 0; peakLevel = 0
+        flattenLevels()
+        targetApp = testID == nil ? NSWorkspace.shared.frontmostApplication : nil
+        targetElement = targetApp.flatMap { Paster.focusedElement(in: $0.processIdentifier) }
+        targetWasSecure = targetElement.map(Paster.isSecure) ?? false
 
         let input = audioEngine.inputNode
         let format = input.outputFormat(forBus: 0)
-        guard format.sampleRate > 0 else {
-            phase = .idle
-            statusMessage = "No microphone detected"
-            return
+        guard format.sampleRate > 0, format.channelCount > 0 else {
+            failStart("No microphone detected", capture: capture); return
         }
-
-        // Tap appends to whatever request is currently live (via the box), so long
-        // dictations can renew the recognition session without losing the mic.
         input.installTap(onBus: 0, bufferSize: 1024, format: format) { [weak self, box = requestBox] buffer, _ in
-            box.request?.append(buffer)
+            box.append(buffer)
             let rms = Self.rms(of: buffer)
-            Task { @MainActor [weak self] in self?.updateLevel(rms) }
+            Task { @MainActor [weak self] in self?.updateLevel(rms, capture: capture) }
         }
         tapInstalled = true
-
-        // Open the recognition session BEFORE the engine starts so the very first
-        // audio buffers are captured instead of dropped.
-        startRecognitionSession()
-
+        guard startRecognitionSession() != nil else {
+            failStart("Cannot create a local recognition session", capture: capture); return
+        }
         audioEngine.prepare()
-        do {
-            try audioEngine.start()
-        } catch {
-            task?.cancel(); task = nil
-            teardownAudio()
-            phase = .idle
-            statusMessage = "Couldn’t start the microphone"
-            return
-        }
-
+        do { try audioEngine.start() }
+        catch { failStart("Could not start microphone: \(error.localizedDescription)", capture: capture); return }
+        captureMicrophoneName = Self.inputName(unit: input.audioUnit) ?? Self.systemInputName()
         phase = .listening
-        statusMessage = "Listening…"
+        statusMessage = "Listening. Option-Space to stop, Option-Escape to cancel."
+        writeTestState("listening", error: nil)
     }
 
-    /// Opens a fresh recognition request + task on the already-running engine.
-    /// A long dictation spans several of these; `committedText` holds the finished
-    /// segments so nothing is lost across renewals.
-    /// Loads the on-device speech model into memory at launch by running a short
-    /// silent recognition. Without this, the first real capture loses its opening
-    /// seconds while the model cold-loads. Mic-free (feeds silence, not the mic).
-    private func warmUpRecognizer() {
-        guard !warmedUp, let recognizer, recognizer.supportsOnDeviceRecognition else { return }
-        warmedUp = true
-        let req = SFSpeechAudioBufferRecognitionRequest()
-        req.requiresOnDeviceRecognition = true
-        req.shouldReportPartialResults = false
-        guard let fmt = AVAudioFormat(standardFormatWithSampleRate: 16000, channels: 1),
-              let buf = AVAudioPCMBuffer(pcmFormat: fmt, frameCapacity: 16000) else { return }
-        buf.frameLength = 16000   // 1s of silence
-        let warmTask = recognizer.recognitionTask(with: req) { _, _ in }
-        req.append(buf)
-        req.endAudio()
-        Task { @MainActor in
-            try? await Task.sleep(nanoseconds: 3_000_000_000)
-            warmTask.cancel()
-        }
+    private func failStart(_ message: String, capture: Int) {
+        teardownAudio()
+        requestBox.replace(with: nil)?.endAudio()
+        cancelSegments()
+        _ = lifecycle.cancel(capture: capture)
+        showingAvailabilityProblem = false
+        phase = .unavailable
+        statusMessage = message
+        writeTestState("failed", error: message)
+        testRunID = nil
     }
 
-    private func startRecognitionSession() {
-        guard let recognizer else { return }
-        sessionGen += 1
-        sessionStartedAt = Date()
-        let gen = sessionGen
+    @discardableResult
+    private func startRecognitionSession() -> RecognitionLifecycle.Token? {
+        guard let recognizer, recognizer.supportsOnDeviceRecognition, recognizer.isAvailable,
+              let token = lifecycle.beginSegment() else { return nil }
         let request = SFSpeechAudioBufferRecognitionRequest()
+        request.requiresOnDeviceRecognition = true
         request.shouldReportPartialResults = true
-        if recognizer.supportsOnDeviceRecognition { request.requiresOnDeviceRecognition = true }
-        requestBox.request = request
-        self.request = request
-        task = recognizer.recognitionTask(with: request) { [weak self] result, error in
-            let seg = result?.bestTranscription.formattedString
-            let isFinal = result?.isFinal ?? false
-            let failed = error != nil
-            Task { @MainActor [weak self] in self?.handleResult(seg, isFinal: isFinal, failed: failed, gen: gen) }
+        request.addsPunctuation = true
+        request.contextualStrings = Array(vocabulary.components(separatedBy: .newlines)
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }.prefix(100))
+        let task = recognizer.recognitionTask(with: request) { [weak self] result, error in
+            MainActor.assumeIsolated {
+                self?.handleResult(result?.bestTranscription.formattedString,
+                    isFinal: result?.isFinal ?? false, error: error, token: token)
+            }
+        }
+        segments[token] = Segment(request: request, task: task)
+        requestBox.replace(with: request)?.endAudio()
+        sessionStartedAt = Date()
+        return token
+    }
+
+    private func handleResult(_ text: String?, isFinal: Bool, error: Error?, token: RecognitionLifecycle.Token) {
+        let wasActive = lifecycle.activeToken == token
+        guard lifecycle.receive(text, isFinal: isFinal, failed: error != nil, token: token) else { return }
+        transcribedText = lifecycle.transcript
+        if isFinal || error != nil {
+            if error != nil { captureProblem = "Recognition was interrupted. Copied the available transcript." }
+            drainDeadlines.removeValue(forKey: token)?.cancel()
+            segments.removeValue(forKey: token)
+            if phase == .listening && wasActive {
+                if error != nil {
+                    consecutiveFailures += 1; totalFailures += 1
+                    if consecutiveFailures > 3 || totalFailures > 12 {
+                        stop(problem: "Recognition was interrupted. Copied the available transcript.")
+                        finalize(capture: token.capture, problem: captureProblem)
+                        return
+                    }
+                } else if !(text ?? "").isEmpty { consecutiveFailures = 0 }
+                if startRecognitionSession() == nil {
+                    stop(problem: "The local recognizer became unavailable. Copied the available transcript.")
+                    finalize(capture: token.capture, problem: captureProblem)
+                    return
+                }
+            }
+            if lifecycle.canFinalize { finalize(capture: token.capture) }
         }
     }
 
-    private func handleResult(_ segment: String?, isFinal: Bool, failed: Bool, gen: Int) {
-        guard gen == sessionGen else { return }                 // stale session — ignore
-        guard phase == .listening || phase == .processing else { return }
-
-        if let segment, !segment.isEmpty {
-            transcribedText = combine(committedText, segment)
-            failureRenewals = 0                                 // healthy output resets the guard
-        }
-
-        if failed {
-            // A session can end early (limit hit / transient error). While the user
-            // is still talking, commit what we have and start a fresh session rather
-            // than ending the whole capture.
-            if phase == .listening {
-                committedText = transcribedText
-                failureRenewals += 1
-                if failureRenewals <= 6 { startRecognitionSession() } else { finalize() }
-            } else {
-                finalize()
-            }
+    private func renewRecognition() {
+        guard phase == .listening, let oldToken = lifecycle.activeToken,
+              let old = segments[oldToken] else { return }
+        guard startRecognitionSession() != nil else {
+            stop(problem: "The local recognizer became unavailable. Copied the available transcript.")
             return
         }
-
-        if isFinal {
-            if let segment, !segment.isEmpty { committedText = combine(committedText, segment) }
-            transcribedText = committedText
-            if phase == .listening {
-                renewRecognition()   // user hasn't stopped — keep capturing
-            } else {
-                finalize()
-            }
+        old.request.endAudio()
+        old.task.finish()
+        drainDeadlines[oldToken] = Task { @MainActor [weak self] in
+            do { try await Task.sleep(nanoseconds: 5_000_000_000) } catch { return }
+            guard let self, self.lifecycle.capture == oldToken.capture,
+                  self.segments[oldToken] != nil else { return }
+            self.segments.removeValue(forKey: oldToken)?.task.cancel()
+            self.drainDeadlines.removeValue(forKey: oldToken)
+            self.captureProblem = "A speech segment timed out. Copied the available transcript."
+            _ = self.lifecycle.receive(nil, isFinal: false, failed: true, token: oldToken)
+            self.transcribedText = self.lifecycle.transcript
+            if self.lifecycle.canFinalize { self.finalize(capture: oldToken.capture) }
         }
     }
 
-    /// Ends the current recognition session and immediately opens a new one,
-    /// keeping the mic/tap running. Lets capture continue indefinitely.
-    private func renewRecognition() {
+    private func stop(problem: String? = nil) {
         guard phase == .listening else { return }
-        committedText = transcribedText
-        task?.cancel(); task = nil
-        requestBox.request?.endAudio()
-        startRecognitionSession()
-    }
-
-    private func combine(_ a: String, _ b: String) -> String {
-        if a.isEmpty { return b }
-        if b.isEmpty { return a }
-        return a + " " + b
-    }
-
-    private func stop() {
-        guard phase == .listening else { return }
+        if let problem { captureProblem = problem }
+        let capture = lifecycle.capture
+        guard lifecycle.stop(capture: capture) else { return }
         phase = .processing
-        statusMessage = "Transcribing…"
+        statusMessage = "Finishing transcription. Option-Escape to cancel."
+        teardownAudio()
+        requestBox.replace(with: nil)?.endAudio()
         sessionStartedAt = nil
         flattenLevels()
-
-        teardownAudio()
-        request?.endAudio()
-
-        // Fallback: if no final result arrives shortly, finalize with what we have.
-        Task { @MainActor [weak self] in
-            try? await Task.sleep(nanoseconds: 1_500_000_000)
-            self?.finalize()
+        for segment in segments.values { segment.request.endAudio(); segment.task.finish() }
+        if lifecycle.canFinalize { finalize(capture: capture); return }
+        stopDeadline?.cancel()
+        stopDeadline = Task { @MainActor [weak self] in
+            do { try await Task.sleep(nanoseconds: 5_000_000_000) } catch { return }
+            guard let self, self.lifecycle.capture == capture, self.lifecycle.isStopping else { return }
+            self.finalize(capture: capture, problem: "Final recognition timed out. Copied the available transcript.")
         }
     }
 
-    private func finalize() {
-        guard !didFinalize else { return }
-        didFinalize = true
-
-        sessionStartedAt = nil
-        task?.cancel()
-        task = nil
-        requestBox.request = nil
-        request = nil
+    private func finalize(capture: Int, problem: String? = nil) {
+        guard let text = lifecycle.finish(capture: capture) else { return }
+        let problem = problem ?? captureProblem
+        stopDeadline?.cancel(); stopDeadline = nil
         teardownAudio()
-
+        requestBox.replace(with: nil)?.endAudio()
+        cancelSegments()
+        sessionStartedAt = nil
         phase = .idle
         flattenLevels()
-        let text = transcribedText.trimmingCharacters(in: .whitespacesAndNewlines)
-        committedText = ""
-        if text.isEmpty {
-            // Distinguish "mic heard nothing" from "heard you but couldn't transcribe".
-            if peakLevel < 0.02 {
-                let mic = AVCaptureDevice.default(for: .audio)?.localizedName ?? "your mic"
-                statusMessage = "No sound from \(mic) — move closer or speak up"
-            } else {
-                statusMessage = "Didn’t catch that — try again"
-            }
+        transcribedText = text
+        if testRunID != nil {
+            writeTestState(problem == nil && !text.isEmpty ? "completed" : "failed",
+                error: problem ?? (text.isEmpty ? "No speech recognized" : nil))
+            testRunID = nil
+            statusMessage = problem == nil && !text.isEmpty ? "Test completed. No text was pasted." : "Test failed. No text was pasted."
+        } else if text.isEmpty {
+            statusMessage = problem ?? (peakLevel < 0.02 ? "No sound from \(microphoneName). Check your input device." : "No words recognized. Try again.")
         } else {
-            deliver(text)
+            deliver(text, problem: problem)
         }
+    }
+
+    private func cancelSegments() {
+        for task in drainDeadlines.values { task.cancel() }
+        drainDeadlines.removeAll()
+        for segment in segments.values { segment.task.cancel() }
+        segments.removeAll()
     }
 
     private func teardownAudio() {
         if audioEngine.isRunning { audioEngine.stop() }
-        if tapInstalled {
-            audioEngine.inputNode.removeTap(onBus: 0)
-            tapInstalled = false
-        }
+        if tapInstalled { audioEngine.inputNode.removeTap(onBus: 0); tapInstalled = false }
     }
 
-    private func updateLevel(_ rms: Float) {
+    private func updateLevel(_ rms: Float, capture: Int) {
+        guard lifecycle.capture == capture, phase == .listening else { return }
         let target = min(1, CGFloat(rms) * 14)
         audioLevel = audioLevel * 0.6 + target * 0.4
         peakLevel = max(peakLevel, audioLevel)
-        var l = levels
-        l.removeFirst()
-        l.append(audioLevel)
-        levels = l
-
-        // Pause-aligned renewal: renew the recognition session during a brief
-        // silence (no words to clip) once it's run a while, or force it before any
-        // per-session limit. Keeps long captures gapless.
-        if phase == .listening, let started = sessionStartedAt {
+        levels.removeFirst(); levels.append(audioLevel)
+        if let started = sessionStartedAt {
             let age = Date().timeIntervalSince(started)
-            let silent = audioLevel < 0.06
-            let hasNewSpeech = transcribedText.count > committedText.count
-            if (age > 16 && silent && hasNewSpeech) || age > 45 {
-                renewRecognition()
-            }
+            if (age > 20 && audioLevel < 0.06 && !transcribedText.isEmpty) || age > 45 { renewRecognition() }
         }
     }
 
-    private func flattenLevels() {
-        audioLevel = 0
-        levels = Array(repeating: 0, count: Self.barCount)
-    }
-
-    /// Root-mean-square amplitude of a buffer, used to drive the orb.
+    private func flattenLevels() { audioLevel = 0; levels = Array(repeating: 0, count: Self.barCount) }
     nonisolated static func rms(of buffer: AVAudioPCMBuffer) -> Float {
-        guard let data = buffer.floatChannelData?[0] else { return 0 }
-        let n = Int(buffer.frameLength)
-        guard n > 0 else { return 0 }
+        guard let data = buffer.floatChannelData?[0], buffer.frameLength > 0 else { return 0 }
         var sum: Float = 0
-        for i in 0..<n { let s = data[i]; sum += s * s }
-        return (sum / Float(n)).squareRoot()
+        for i in 0..<Int(buffer.frameLength) { sum += data[i] * data[i] }
+        return (sum / Float(buffer.frameLength)).squareRoot()
     }
 
-    // MARK: History
+    nonisolated private static func deviceName(_ device: AudioDeviceID) -> String? {
+        var address = AudioObjectPropertyAddress(mSelector: kAudioObjectPropertyName,
+            mScope: kAudioObjectPropertyScopeGlobal, mElement: kAudioObjectPropertyElementMain)
+        var name: Unmanaged<CFString>?
+        var size = UInt32(MemoryLayout<Unmanaged<CFString>?>.size)
+        guard AudioObjectGetPropertyData(device, &address, 0, nil, &size, &name) == noErr else { return nil }
+        return name?.takeRetainedValue() as String?
+    }
 
-    private static let dayFormatter: DateFormatter = {
-        let f = DateFormatter()
-        f.locale = Locale(identifier: "en_US_POSIX")
-        f.dateFormat = "yyyy-MM-dd"
-        return f
-    }()
+    nonisolated private static func systemInputName() -> String? {
+        var device = AudioDeviceID()
+        var size = UInt32(MemoryLayout<AudioDeviceID>.size)
+        var address = AudioObjectPropertyAddress(mSelector: kAudioHardwarePropertyDefaultInputDevice,
+            mScope: kAudioObjectPropertyScopeGlobal, mElement: kAudioObjectPropertyElementMain)
+        guard AudioObjectGetPropertyData(AudioObjectID(kAudioObjectSystemObject), &address, 0, nil, &size, &device) == noErr else { return nil }
+        return deviceName(device)
+    }
 
-    private static let timeFormatter: DateFormatter = {
-        let f = DateFormatter()
-        f.locale = Locale(identifier: "en_US_POSIX")
-        f.dateFormat = "HH:mm:ss"
-        return f
-    }()
+    nonisolated private static func inputName(unit: AudioUnit?) -> String? {
+        guard let unit else { return nil }
+        var device = AudioDeviceID()
+        var size = UInt32(MemoryLayout<AudioDeviceID>.size)
+        guard AudioUnitGetProperty(unit, kAudioOutputUnitProperty_CurrentDevice, kAudioUnitScope_Global, 0, &device, &size) == noErr else { return nil }
+        return deviceName(device)
+    }
 
-    /// Appends one timestamped entry to a per-day history file so every dictation
-    /// is kept, browsable by date. Never overwrites.
-    private func appendHistory(_ text: String, in hermesDir: URL) {
-        let now = Date()
-        let historyDir = hermesDir.appendingPathComponent("voice_history")
-        try? FileManager.default.createDirectory(at: historyDir, withIntermediateDirectories: true)
+    private func writeTestState(_ state: String, error: String?) {
+        guard let id = testRunID else { return }
+        let formatter = ISO8601DateFormatter()
+        let result = TalkyTestResult(runID: id, phase: state, transcript: transcribedText, error: error,
+            startedAt: formatter.string(from: captureStartedAt),
+            finishedAt: state == "listening" ? nil : formatter.string(from: Date()), microphone: microphoneName)
+        do { try store.writeTestResult(result) }
+        catch { statusMessage = "Test output: \(error.localizedDescription)" }
+    }
 
-        let dayFile = historyDir.appendingPathComponent("\(Self.dayFormatter.string(from: now)).md")
-        let isNew = !FileManager.default.fileExists(atPath: dayFile.path)
-
-        var chunk = ""
-        if isNew {
-            chunk += "# Voice history — \(Self.dayFormatter.string(from: now))\n\n"
-        }
-        chunk += "## \(Self.timeFormatter.string(from: now))\n\(text)\n\n"
-
-        guard let data = chunk.data(using: .utf8) else { return }
-        if isNew {
-            try? data.write(to: dayFile)
-        } else if let handle = try? FileHandle(forWritingTo: dayFile) {
-            defer { try? handle.close() }
-            _ = try? handle.seekToEnd()
-            try? handle.write(contentsOf: data)
+    func startCommandWatcher() {
+        do {
+            try store.prepare()
+            let cmd = store.root.appendingPathComponent("talky_cmd")
+            if !FileManager.default.fileExists(atPath: cmd.path) { try store.write(Data(), to: cmd) }
+        } catch { storageProblem = error.localizedDescription; statusMessage = error.localizedDescription; return }
+        commandTimer?.invalidate()
+        var ticks = 0
+        commandTimer = Timer.scheduledTimer(withTimeInterval: 0.25, repeats: true) { [weak self] _ in
+            MainActor.assumeIsolated {
+                guard let self else { return }
+                ticks += 1
+                if ticks % 8 == 0 { self.refreshPermissions() }
+                do {
+                    guard let command = try self.store.consumeCommand() else { return }
+                    if command.hasPrefix("test-start:"), let id = UUID(uuidString: String(command.dropFirst(11))) {
+                        self.start(testID: id.uuidString)
+                    } else if command.hasPrefix("test-stop:"), let id = UUID(uuidString: String(command.dropFirst(10))), id.uuidString == self.testRunID {
+                        self.stop()
+                    } else {
+                        switch command.lowercased() {
+                        case "start": if !self.isBusy { self.start() }
+                        case "stop": self.stop()
+                        case "cancel": self.cancel()
+                        case "toggle": self.toggle()
+                        default: break
+                        }
+                    }
+                } catch { self.statusMessage = error.localizedDescription }
+            }
         }
     }
 
-    /// Full history as structured entries, newest first, across all days.
     func loadHistory() -> [HistoryItem] {
-        let dir = FileManager.default.homeDirectoryForCurrentUser
-            .appendingPathComponent(".talky/voice_history")
-        guard let files = try? FileManager.default.contentsOfDirectory(
-            at: dir, includingPropertiesForKeys: nil) else { return [] }
-        let days = files.filter { $0.pathExtension == "md" }
-            .sorted { $0.lastPathComponent > $1.lastPathComponent }   // newest day first
-
-        var items: [HistoryItem] = []
-        for file in days {
-            let date = file.deletingPathExtension().lastPathComponent
-            guard let content = try? String(contentsOf: file, encoding: .utf8) else { continue }
-            var dayItems: [HistoryItem] = []
-            var time: String?
-            var lines: [String] = []
-            func flush() {
-                if let t = time {
-                    let body = lines.joined(separator: "\n").trimmingCharacters(in: .whitespacesAndNewlines)
-                    if !body.isEmpty { dayItems.append(HistoryItem(date: date, time: t, text: body)) }
-                }
-                time = nil; lines = []
+        do {
+            return try store.loadRecords().map { record in
+                let time: String
+                let day: String
+                if let date = record.timestamp {
+                    let df = DateFormatter(); df.dateStyle = .medium; df.timeStyle = .none
+                    day = df.string(from: date); df.dateStyle = .none; df.timeStyle = .short
+                    time = df.string(from: date)
+                } else { day = String(record.createdAt.prefix(10)); time = String(record.createdAt.dropFirst(11).prefix(8)) }
+                return HistoryItem(id: record.id, date: day, time: time, text: record.text)
             }
-            for line in content.components(separatedBy: "\n") {
-                if line.hasPrefix("## ") {
-                    flush()
-                    time = String(line.dropFirst(3)).trimmingCharacters(in: .whitespaces)
-                } else if line.hasPrefix("# ") {
-                    flush()                       // day header
-                } else if time != nil {
-                    lines.append(line)
-                }
-            }
-            flush()
-            items.append(contentsOf: dayItems.reversed())   // newest entry of the day first
-        }
-        return items
+        } catch { statusMessage = "History: \(error.localizedDescription)"; return [] }
     }
 
-    // MARK: Delivery — clipboard, auto-paste, and the Hermes hand-off file
+    func clearHistory() {
+        do { try store.clearHistory(); statusMessage = "Local history cleared" }
+        catch { statusMessage = "History: \(error.localizedDescription)" }
+    }
 
-    private func deliver(_ text: String) {
-        // 1. Persist for any Hermes process watching the file (latest only).
-        let dir = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent(".talky")
-        try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
-        try? text.write(to: dir.appendingPathComponent("voice_input.txt"),
-                        atomically: true, encoding: .utf8)
+    func exportHistory() {
+        let panel = NSSavePanel()
+        panel.nameFieldStringValue = "Talky-history.txt"
+        panel.title = "Export local dictation history"
+        PanelChrome.dropForPrompt()
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        do {
+            let content = try store.loadRecords().map { "\($0.createdAt)\n\($0.text)" }.joined(separator: "\n\n")
+            try store.export(Data(content.utf8), to: url)
+            statusMessage = "History exported"
+        } catch { statusMessage = "Export: \(error.localizedDescription)" }
+    }
 
-        // 1b. Append to the dated, timestamped conversation history (never overwritten).
-        appendHistory(text, in: dir)
+    private func pruneHistory() {
+        guard saveHistory, [1, 7, 30].contains(historyRetentionDays),
+              let cutoff = Calendar.current.date(byAdding: .day, value: -historyRetentionDays, to: Date()) else { return }
+        do { try store.pruneHistory(olderThan: cutoff) }
+        catch { storageProblem = error.localizedDescription }
+    }
 
-        // 2. Always put it on the clipboard — a universal fallback you can ⌘V
-        //    anywhere, even if auto-paste fails.
+    func copy(_ text: String) {
         NSPasteboard.general.clearContents()
-        NSPasteboard.general.setString(text, forType: .string)
+        if NSPasteboard.general.setString(text, forType: .string) { statusMessage = "Copied to clipboard" }
+        else { statusMessage = "Could not write to clipboard" }
+    }
 
-        // 3. Auto-paste into the app that was focused when you started, using ⌘V.
-        //    ⌘V works everywhere (Terminal, editors, chat) — unlike per-app text
-        //    insertion, which some apps (e.g. Terminal) reject.
-        guard Paster.isTrusted else {
-            statusMessage = "Copied — enable Accessibility to auto-paste"
-            PanelChrome.dropForPrompt()
-            Paster.requestTrust()
-            return
+    private func deliver(_ text: String, problem: String?) {
+        var storageErrors: [String] = []
+        if saveHistory {
+            do { try store.appendHistory(TalkyHistoryRecord(text: text, language: languageIdentifier)); pruneHistory() }
+            catch { storageErrors.append("history was not saved") }
         }
-
-        let submit = autoSubmit
+        if writeLatestTranscript {
+            do { try store.writeLatest(text) } catch { storageErrors.append("automation file was not saved") }
+        }
+        copy(text)
+        guard NSPasteboard.general.string(forType: .string) == text else { return }
+        let storageNotice = storageErrors.isEmpty ? "" : ". " + storageErrors.joined(separator: "; ")
+        statusMessage += storageNotice
+        let clipboardVersion = NSPasteboard.general.changeCount
+        if let problem { statusMessage = problem + storageNotice; return }
+        guard autoPaste else { return }
         let target = targetApp
-        let appName = target?.localizedName ?? "the active app"
-        statusMessage = submit ? "Sent to \(appName) ✓" : "Pasted into \(appName) ✓"
-        Task { @MainActor in
-            target?.activate()   // make sure the paste lands in the intended app
-            try? await Task.sleep(nanoseconds: 120_000_000)
-            Paster.paste()
+        let element = targetElement
+        let secure = targetWasSecure
+        let submit = autoSubmit
+        let capture = lifecycle.capture
+        deliveryTask?.cancel()
+        deliveryTask = Task { @MainActor [weak self] in
+            do { try await Task.sleep(nanoseconds: 120_000_000) } catch { return }
+            guard let self, self.lifecycle.capture == capture else { return }
+            let safety = Paster.safety(target: target, element: element, clipboardVersion: clipboardVersion, secure: secure)
+            if let reason = safety.blockedReason { self.statusMessage = "Copied. \(reason)." + storageNotice; return }
+            guard let target, Paster.paste(to: target.processIdentifier) else {
+                self.statusMessage = "Copied. Could not send the paste shortcut." + storageNotice; return
+            }
+            self.statusMessage = "Copied and sent to \(target.localizedName ?? "your app")" + storageNotice
             if submit {
-                try? await Task.sleep(nanoseconds: 90_000_000)
-                Paster.pressReturn()
-            }
-        }
-    }
-}
-
-// MARK: - Direct text insertion
-
-enum TextInserter {
-    /// Inserts text at the cursor in the target app. Tries the Accessibility API
-    /// against that specific app first, then the system-wide focused element, then
-    /// falls back to synthesizing Unicode keystrokes. Returns true if a real text
-    /// field accepted the text (AX path), false if it had to type blind.
-    @discardableResult
-    static func insert(_ text: String, into app: NSRunningApplication?) -> Bool {
-        if let pid = app?.processIdentifier, axInsert(text, pid: pid) { return true }
-        if axInsertSystemWide(text) { return true }
-        typeUnicode(text)
-        return false
-    }
-
-    /// Sets the focused text element of a specific application (by pid).
-    private static func axInsert(_ text: String, pid: pid_t) -> Bool {
-        let appElement = AXUIElementCreateApplication(pid)
-        var focusedRef: CFTypeRef?
-        guard AXUIElementCopyAttributeValue(appElement, kAXFocusedUIElementAttribute as CFString, &focusedRef) == .success,
-              let focused = focusedRef else { return false }
-        return setSelectedText(focused as! AXUIElement, text)
-    }
-
-    /// Sets the system-wide focused text element (fallback when the app-targeted
-    /// lookup misses).
-    private static func axInsertSystemWide(_ text: String) -> Bool {
-        let system = AXUIElementCreateSystemWide()
-        var focusedRef: CFTypeRef?
-        guard AXUIElementCopyAttributeValue(system, kAXFocusedUIElementAttribute as CFString, &focusedRef) == .success,
-              let focused = focusedRef else { return false }
-        return setSelectedText(focused as! AXUIElement, text)
-    }
-
-    /// Inserts at the caret (replacing any selection) if the element accepts it.
-    private static func setSelectedText(_ element: AXUIElement, _ text: String) -> Bool {
-        var settable: DarwinBoolean = false
-        guard AXUIElementIsAttributeSettable(element, kAXSelectedTextAttribute as CFString, &settable) == .success,
-              settable.boolValue else { return false }
-        return AXUIElementSetAttributeValue(element, kAXSelectedTextAttribute as CFString, text as CFString) == .success
-    }
-
-    /// Types the text as synthetic Unicode keystrokes. Works in nearly every app
-    /// and never touches the clipboard.
-    private static func typeUnicode(_ text: String) {
-        guard let source = CGEventSource(stateID: .combinedSessionState) else { return }
-        let utf16 = Array(text.utf16)
-        let chunkSize = 20
-        var index = 0
-        while index < utf16.count {
-            let chunk = Array(utf16[index..<min(index + chunkSize, utf16.count)])
-            for isKeyDown in [true, false] {
-                guard let event = CGEvent(keyboardEventSource: source, virtualKey: 0, keyDown: isKeyDown) else { continue }
-                chunk.withUnsafeBufferPointer { buffer in
-                    event.keyboardSetUnicodeString(stringLength: chunk.count, unicodeString: buffer.baseAddress)
+                do { try await Task.sleep(nanoseconds: 120_000_000) } catch { return }
+                guard self.lifecycle.capture == capture,
+                      Paster.safety(target: target, element: element, clipboardVersion: clipboardVersion, secure: secure).blockedReason == nil,
+                      Paster.pressReturn(to: target.processIdentifier) else {
+                    self.statusMessage = "Copied. Return was not sent because delivery checks failed." + storageNotice; return
                 }
-                event.post(tap: .cghidEventTap)
+                self.statusMessage = "Paste and Return sent to \(target.localizedName ?? "your app")" + storageNotice
             }
-            index += chunkSize
         }
     }
 }
 
-// MARK: - Accessibility trust + key synthesis
+extension Locale {
+    var localizedName: String { Locale.current.localizedString(forIdentifier: identifier) ?? identifier }
+}
 
+// MARK: - Safe keyboard delivery
+
+@MainActor
 enum Paster {
-    /// Whether we're allowed to post synthetic keyboard events (Accessibility permission).
     static var isTrusted: Bool { AXIsProcessTrusted() }
-
-    /// Prompts the user to grant Accessibility access (shows the system dialog once).
-    @discardableResult
-    static func requestTrust() -> Bool {
+    @discardableResult static func requestTrust() -> Bool {
         let key = kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String
         return AXIsProcessTrustedWithOptions([key: true] as CFDictionary)
     }
 
-    /// Simulates ⌘V to paste the clipboard into the focused app.
-    static func paste() {
-        guard let source = CGEventSource(stateID: .combinedSessionState) else { return }
-        let v: CGKeyCode = 9 // ANSI "v"
-        let down = CGEvent(keyboardEventSource: source, virtualKey: v, keyDown: true)
-        down?.flags = .maskCommand
-        let up = CGEvent(keyboardEventSource: source, virtualKey: v, keyDown: false)
-        up?.flags = .maskCommand
-        down?.post(tap: .cghidEventTap)
-        up?.post(tap: .cghidEventTap)
+    static func focusedElement(in pid: pid_t) -> AXUIElement? {
+        guard isTrusted else { return nil }
+        var value: CFTypeRef?
+        guard AXUIElementCopyAttributeValue(AXUIElementCreateApplication(pid), kAXFocusedUIElementAttribute as CFString, &value) == .success,
+              let value, CFGetTypeID(value) == AXUIElementGetTypeID() else { return nil }
+        return (value as! AXUIElement)
     }
 
-    /// Simulates Return to submit whatever was just pasted.
-    static func pressReturn() {
-        guard let source = CGEventSource(stateID: .combinedSessionState) else { return }
-        let returnKeyCode: CGKeyCode = 36 // Return
-
-        let keyDown = CGEvent(keyboardEventSource: source, virtualKey: returnKeyCode, keyDown: true)
-        let keyUp = CGEvent(keyboardEventSource: source, virtualKey: returnKeyCode, keyDown: false)
-
-        keyDown?.post(tap: .cghidEventTap)
-        keyUp?.post(tap: .cghidEventTap)
+    static func isSecure(_ element: AXUIElement) -> Bool {
+        var value: CFTypeRef?
+        return AXUIElementCopyAttributeValue(element, kAXSubroleAttribute as CFString, &value) == .success
+            && value as? String == kAXSecureTextFieldSubrole as String
     }
+
+    static func safety(target: NSRunningApplication?, element: AXUIElement?, clipboardVersion: Int, secure: Bool) -> DeliverySafety {
+        let current = target.flatMap { focusedElement(in: $0.processIdentifier) }
+        return DeliverySafety(trusted: isTrusted, targetAlive: target?.isTerminated == false,
+            sameApplication: target?.processIdentifier == NSWorkspace.shared.frontmostApplication?.processIdentifier,
+            sameElement: element != nil && current != nil && CFEqual(element, current),
+            clipboardUnchanged: NSPasteboard.general.changeCount == clipboardVersion,
+            secureField: secure || current.map(isSecure) == true)
+    }
+
+    private static func key(_ key: CGKeyCode, flags: CGEventFlags = [], to pid: pid_t) -> Bool {
+        guard isTrusted, NSWorkspace.shared.frontmostApplication?.processIdentifier == pid,
+              let source = CGEventSource(stateID: .combinedSessionState),
+              let down = CGEvent(keyboardEventSource: source, virtualKey: key, keyDown: true),
+              let up = CGEvent(keyboardEventSource: source, virtualKey: key, keyDown: false) else { return false }
+        down.flags = flags; up.flags = flags
+        down.postToPid(pid); up.postToPid(pid)
+        return true
+    }
+    static func paste(to pid: pid_t) -> Bool { key(9, flags: .maskCommand, to: pid) }
+    static func pressReturn(to pid: pid_t) -> Bool { key(36, to: pid) }
 }

@@ -8,6 +8,9 @@ import {
   useVideoConfig,
 } from "remotion";
 
+// Historical demo composition. Existing MP4 and GIF assets have not been rerendered.
+// Read PRODUCT.md for current runtime and distribution verification limits.
+
 const GREEN = "#39FF14";
 const AMBER = "#FFB000";
 const BG = "#07070C";
@@ -83,7 +86,7 @@ const WhatIs: React.FC = () => {
           )}
         </div>
       </div>
-      <Caption text={listening ? "Speak — your words appear at the cursor." : "A tiny widget that floats on your screen."} />
+      <Caption text={listening ? "Speak. Your words become a transcript." : "A tiny widget that floats on your screen."} />
     </Scene>
   );
 };
@@ -102,17 +105,17 @@ const Step: React.FC<{ n: string; appearAt: number; children: React.ReactNode }>
 const Install: React.FC = () => {
   return (
     <Scene dur={250}>
-      <div style={{ position: "absolute", top: 70, width: "100%", textAlign: "center", fontFamily: MONO, fontSize: 40, color: GREEN, fontWeight: 600, textShadow: `0 0 20px ${GREEN}aa` }}>Install — about a minute</div>
+      <div style={{ position: "absolute", top: 70, width: "100%", textAlign: "center", fontFamily: MONO, fontSize: 40, color: GREEN, fontWeight: 600, textShadow: `0 0 20px ${GREEN}aa` }}>Build from source</div>
       <div style={{ display: "flex", flexDirection: "column", gap: 26, width: 980 }}>
-        <Step n="1" appearAt={18}>Download <b style={{ color: GREEN }}>Lokaah-Talky.dmg</b> and open it</Step>
-        <Step n="2" appearAt={54}>Drag <b style={{ color: GREEN }}>Lokaah Talky</b> → <b style={{ color: GREEN }}>Applications</b></Step>
+        <Step n="1" appearAt={18}>Clone <b style={{ color: GREEN }}>github.com/Venkat-RJ/lokaah-talky</b></Step>
+        <Step n="2" appearAt={54}>Read <b style={{ color: GREEN }}>BUILD.md</b> and choose a build route</Step>
         <Step n="3" appearAt={92}>
-          In Terminal, run once:
+          Build a separate local app:
           <div style={{ ...card({ borderColor: `${GREEN}66`, borderRadius: 10 }), marginTop: 10, padding: "12px 16px", fontSize: 21, color: GREEN }}>
-            xattr -dr com.apple.quarantine "/Applications/Lokaah&nbsp;Talky.app"
+            ./build-local.sh
           </div>
         </Step>
-        <Step n="4" appearAt={140}>Open it → allow <b style={{ color: GREEN }}>Microphone</b> · <b style={{ color: GREEN }}>Speech</b> · <b style={{ color: GREEN }}>Accessibility</b></Step>
+        <Step n="4" appearAt={140}>Read <b style={{ color: GREEN }}>PRODUCT.md</b> for the remaining release checks</Step>
       </div>
     </Scene>
   );
@@ -136,14 +139,14 @@ const HowToUse: React.FC = () => {
           <span style={{ color: AMBER }}>$ </span><span>{cmd.slice(0, chars)}</span><span style={{ opacity: blink ? 1 : 0.1 }}>▍</span>
         </div>
       </div>
-      <Caption text="Your words type straight into whatever app is focused." />
+      <Caption text="Talky copies your words and checks the original field before paste." />
     </Scene>
   );
 };
 
 const Features: React.FC = () => {
   const f = useCurrentFrame();
-  const items = ["On-device & private — audio never leaves your Mac", "Long conversations, nothing cut off", "Every dictation saved to your history"];
+  const items = ["On-device recognition required", "Clipboard delivery checks the original field", "Optional local history starts off"];
   return (
     <Scene dur={120}>
       <div style={{ display: "flex", flexDirection: "column", gap: 30 }}>
@@ -169,7 +172,7 @@ const EndCard: React.FC = () => {
       <div style={{ transform: `scale(${0.7 + s * 0.3})`, textAlign: "center" }}>
         <Waveform n={9} size={1.1} />
         <div style={{ marginTop: 30, fontFamily: MONO, fontSize: 72, color: GREEN, fontWeight: 600, textShadow: `0 0 24px ${GREEN}aa` }}>lokaah talky</div>
-        <div style={{ marginTop: 16, fontFamily: MONO, fontSize: 26, color: "#9affa0" }}>github.com/venkat-lokaah/lokaah-talky</div>
+        <div style={{ marginTop: 16, fontFamily: MONO, fontSize: 26, color: "#9affa0" }}>github.com/Venkat-RJ/lokaah-talky</div>
       </div>
     </Scene>
   );
@@ -185,6 +188,7 @@ export const Explainer: React.FC = () => {
       <Sequence from={480} durationInFrames={180}><HowToUse /></Sequence>
       <Sequence from={660} durationInFrames={120}><Features /></Sequence>
       <Sequence from={780} durationInFrames={90}><EndCard /></Sequence>
+      <div style={{ position: "absolute", top: 20, width: "100%", textAlign: "center", fontFamily: MONO, fontSize: 18, color: AMBER }}>Historical demo composition. Current release checks remain open.</div>
     </AbsoluteFill>
   );
 };

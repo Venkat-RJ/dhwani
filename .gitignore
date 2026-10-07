@@ -4,6 +4,7 @@
 # Xcode / build
 build/
 DerivedData/
+video/node_modules/
 *.xcuserstate
 xcuserdata/
 *.xcscmblueprint
@@ -11,3 +12,10 @@ xcuserdata/
 # Local agent / tooling state (not part of the project)
 .claude/
 .gstack/
+
+# Local recordings, transcripts, and signing identities
+.talky/
+*.p12
+*.pfx
+*.key
+*.pem

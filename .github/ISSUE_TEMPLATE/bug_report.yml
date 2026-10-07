@@ -1,0 +1,37 @@
+name: Bug report
+description: Describe a reproducible problem using synthetic or redacted data.
+title: "Bug: "
+body:
+  - type: markdown
+    attributes:
+      value: "For a security vulnerability, use SECURITY.md instead of a public issue. Do not include private dictations or recordings."
+  - type: input
+    id: version
+    attributes:
+      label: Commit or release
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: macOS version, hardware, and speech language
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Include destination app and relevant permission or storage settings.
+    validations:
+      required: true
+  - type: textarea
+    id: result
+    attributes:
+      label: Expected and observed behavior
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Redacted diagnostics and checks performed
+      description: Explain whether this was a live capture, an isolated test, or source inspection.

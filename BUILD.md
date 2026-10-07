@@ -1,72 +1,130 @@
 # Building Lokaah Talky
 
-How the app is structured, signed, and built. For install/use, see [README.md](README.md).
+## Toolchain and platform
 
-## Requirements
+Use Apple Silicon and either Xcode 26 or newer, or standalone Command Line Tools that support the flags in `build-local.sh`.
+The app's deployment target is macOS 14.
+Using a newer SDK does not prove runtime behavior on macOS 14.
+Record the OS, Xcode version, and checks performed when reporting compatibility.
 
-- macOS 14+ (project targets the macOS 26 SDK), Apple Silicon
-- Xcode 16+ (command-line tools installed)
+## Standalone CLT build
 
-## Quick build
+The local builder uses `/Library/Developer/CommandLineTools` by default.
+Set `TALKY_DEVELOPER_DIR` to another configured toolchain directory when needed.
+It uses the selected macOS SDK, snapshots the Swift source, creates the app icon, and packages the app without changing the installed application.
 
 ```bash
-./setup-cert.sh         # once per machine
-./reinstall.sh --build  # build + sign + install + launch
+# Debug, with an unsigned executable.
+./build-local.sh
+
+# Optimized Release, also unsigned.
+./build-local.sh --release
+
+# Optimized bundle signed ad-hoc for local launch testing.
+./build-local.sh --release --adhoc --output-dir build/local
 ```
 
-`./reinstall.sh` (no `--build`) re-signs and reinstalls the most recent build.
-You can also open `Lokaah Talky.xcodeproj` in Xcode and Run.
+The default output is `build/local/Lokaah Talky.app`.
+Use `--output-dir` to choose a separate output directory, including a temporary directory for verification.
+Each bundle records its build method, Debug or Release configuration, and source SHA256 in Info.plist.
+The builder stages the complete bundle before replacing a previous output.
+Compilation or signing errors return failure and preserve the previous build.
 
-## Project layout
+Unsigned Apple Silicon executables need signing before launch.
+`--adhoc` signs and verifies the bundle with an ad-hoc identity.
+Local ad-hoc builds can request permissions again after rebuilding.
+Use a stable local identity when you need permission continuity.
 
-```
-Lokaah Talky.xcodeproj      # Xcode project (target/scheme: "Lokaah Talky")
-Lokaah Talky/
-  LokaahTalkyApp.swift      # the entire app — one file
-  Assets.xcassets/          # app icon (green waveform mark)
-assets/icon.png             # repo/logo copy of the icon
-setup-cert.sh               # generates the local signing cert
-reinstall.sh                # build → sign → install → launch
-```
+The standalone bundle is separate from Xcode's products.
+`reinstall.sh` consumes only the Xcode Debug product described below, so running it after a standalone build will not install that standalone bundle.
 
-Bundle id: `com.lokaah.talky` · App: `/Applications/Lokaah Talky.app`.
+During the 7 October 2026 review, standalone Debug and Release bundle builds passed with Swift 6.3.2 and the macOS 26.5 SDK.
+The executables encoded a minimum macOS version of 14.0.
+Live operation on macOS 14 remains a separate acceptance check.
 
-## Architecture (LokaahTalkyApp.swift)
+## Xcode build
 
-It's a SwiftUI menubar-less accessory app — no Dock icon, no main window. Everything is in one file:
-
-- **`LokaahTalkyApp` / `AppDelegate`** — sets `.accessory` activation policy, creates the floating panel, registers the ⌥Space global hotkey (Carbon `RegisterEventHotKey`), the `~/.talky/talky_cmd` command watcher, and the login-at-launch item (`SMAppService`). A Combine observer resizes the panel between compact and full.
-- **`FloatingPanel`** — a borderless, non-activating `NSPanel` at `.floating` level. Non-activating is what lets it never steal focus, so synthesized typing lands in the app you were using.
-- **`RootView`** — the UI. Compact "presence" widget vs. full panel (waveform, transcript, history, toggles). Phosphor-terminal aesthetic.
-- **`Waveform` / `MiniWaveform`** — audio-reactive green bars driven by the live mic level.
-- **`SpeechManager`** — the engine. On-device `SFSpeechRecognizer`; long captures survive by renewing the recognition session at natural pauses and on session-end, accumulating committed text across sessions (a request "box" keeps the mic tap alive across renewals). Writes history to `~/.talky/voice_history/YYYY-MM-DD.md` and the latest line to `~/.talky/voice_input.txt`.
-- **`TextInserter`** — inserts the transcript via the Accessibility API (`kAXSelectedText` on the focused element), with a CGEvent Unicode-keystroke fallback for apps that reject AX. Never touches the clipboard on the happy path.
-- **`Paster`** — Accessibility-trust check/prompt and the synthetic Return key for auto-send.
-
-## Signing (important)
-
-Xcode signs the app **ad-hoc**, so its code hash changes on every build. macOS ties
-permission grants (Microphone / Speech / Accessibility) to the code identity, so an
-ad-hoc rebuild silently invalidates them — you'd re-grant every build.
-
-`setup-cert.sh` creates a local self-signed code-signing cert **"Talky Self-Signed"**
-in your login keychain. `reinstall.sh` re-signs each build with it:
-
-```
-codesign --force --deep --sign "Talky Self-Signed" "/Applications/Lokaah Talky.app"
+```bash
+xcodebuild -version
+xcodebuild -project "Lokaah Talky.xcodeproj" \
+  -scheme "Lokaah Talky" -configuration Release \
+  -destination "generic/platform=macOS" \
+  -derivedDataPath build/verification \
+  CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO build
 ```
 
-That gives a **stable designated requirement** (`identifier "com.lokaah.talky" and
-certificate leaf = <your cert>`), so grants persist across rebuilds. The cert does not
-need to be trusted by Gatekeeper — codesign uses it locally and macOS only needs the
-stable identity. Each developer generates their own cert; nothing secret is shared.
+This builds an unsigned verification artifact without replacing the installed app.
+The full Xcode build on the review machine exited with code 69 because its license was not accepted.
+`xcodebuild -version` succeeding did not establish that an app could be built.
+Configure that Xcode installation before treating its build as verified, or use the standalone CLT route when that toolchain is already configured.
+The CLT build does not accept a full Xcode license or change the system developer-directory selection.
 
-Without the cert, `reinstall.sh` falls back to ad-hoc and warns you (grants reset per build).
+## Local installation
 
-## Permissions
+```bash
+./setup-cert.sh
+./reinstall.sh --build
+```
 
-Declared in the build settings (auto-generated Info.plist keys):
-`NSMicrophoneUsageDescription`, `NSSpeechRecognitionUsageDescription`. Accessibility is
-requested at runtime the first time the app needs to type.
+The setup script creates the local **Talky Self-Signed** certificate and private key in your login keychain.
+Read the keychain prompt before granting access.
+Keep this identity local and never commit or publish its private key.
+A stable signing identity helps macOS recognize successive development builds.
+Permission grants can still require review after identity, bundle, or system changes.
 
-Data lives in `~/.talky/` (`voice_history/`, `voice_input.txt`, `talky_cmd`).
+The installer uses this checkout's `build/Build/Products/Debug/Lokaah Talky.app`.
+Running `./reinstall.sh` without `--build` installs its existing build.
+The installer stages and verifies the signed bundle before stopping the running app or replacing the local installation.
+Copy, signing, or launch failure returns a nonzero status; replacement and launch failures restore the previous app when one existed.
+Read its output for the actual installation path.
+The default path is `/Applications/Lokaah Talky.app`.
+`TALKY_DEST_DIR` can select another writable installation directory.
+
+Local self-signing is for development.
+It is separate from Developer ID signing, notarization, and a verified public download.
+Do not present an old unsigned DMG as the hardened release.
+
+## Architecture
+
+The app source is `Lokaah Talky/LokaahTalkyApp.swift`.
+The bundle identifier is `com.lokaah.talky`.
+
+- `AppDelegate` creates the floating accessory panel and global hotkeys.
+- `RootView` provides the compact widget, transcript, history, and settings controls.
+- `SpeechManager` manages permissions, capture, recognition sessions, cancellation, and delivery.
+- The audio-request holder synchronizes access between the audio tap and recognition-session changes.
+- `Paster` checks Accessibility trust and synthesizes Command-V and optional Return.
+- The waveform views display microphone levels.
+
+Keep UI and capture state on the main actor.
+Audio callbacks must use synchronized request access and must not modify actor-isolated state directly.
+Recognition callbacks and delayed work must belong to a specific capture so they cannot finalize a later one.
+
+## Delivery and storage
+
+Regular dictation always replaces the clipboard with the completed transcript.
+Automatic paste uses Command-V, including for Terminal.
+Accessibility is used to validate the original focused element, not as the primary text-insertion path.
+Recheck the destination before paste and before Return.
+Cancel rather than activate a stale destination.
+
+Persist transcripts only when the corresponding storage option is enabled.
+The default data directory is `~/.talky/`.
+An absolute `TALKY_DATA_DIR` environment value selects a separate data root for an isolated test process.
+Use mode `0700` for private directories and `0600` for files, including replacements and migration of existing storage.
+Isolated test captures write only their own result files and must not deliver to another app.
+
+## Runtime and release checks
+
+A successful bundle build verifies compilation and packaging.
+Microphone and Speech Recognition permissions, local-model availability, Accessibility delivery, cancellation, long captures, and minimum-OS operation require live acceptance checks.
+Developer ID signing, notarization, clean-machine installation, and public CI remain release gates tracked in [PRODUCT.md](PRODUCT.md#release-readiness).
+Use [TESTING.md](TESTING.md) to record the checks actually performed.
+
+## Optional video tooling
+
+The historical explainer source is in `video/`.
+Its dependencies are pinned together to Remotion 4.0.533.
+Run `npm audit --package-lock-only --ignore-scripts` there to check the locked public dependencies.
+Remotion has its own license.
+The old MP4 and GIF are historical assets and require a new content review before being used as a current product demo.
