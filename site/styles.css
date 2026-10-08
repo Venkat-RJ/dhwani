@@ -140,45 +140,21 @@ h2 { font-size: clamp(34px, 4vw, 48px); font-weight: 550; line-height: 1.07; }
 .privacy-facts p { font-size: 13px; color: #c1cebb; line-height: 1.7; }
 .privacy-panel a:focus-visible { outline-color: var(--lime); }
 
-.install { display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: 95px; }
-.body-copy { font-size: 15px; color: var(--muted); line-height: 1.75; margin-top: 22px; max-width: 410px; }
+.install { text-align: center; }
+.install-intro { max-width: 680px; margin-inline: auto; }
+.body-copy { font-size: 15px; color: var(--muted); line-height: 1.75; margin: 22px auto 0; max-width: 530px; }
 .install-actions { margin-top: 22px; }
-.beta-disclosure { border-left: 2px solid #91ad73; padding-left: 17px; margin-top: 27px; }
-.beta-disclosure > strong { font-size: 13px; font-weight: 650; }
-.beta-disclosure p { font-size: 13px; color: var(--muted); line-height: 1.7; margin-top: 8px; }
-.beta-disclosure a { display: inline-block; font-size: 12px; margin-top: 10px; color: var(--green); }
-.install-intro > .text-link { margin-top: 16px; font-size: 12px; }
-.install-help { border-top: 1px solid var(--line); margin-top: 22px; }
+.beta-disclosure { font-size: 12px; color: var(--muted); margin-top: 15px; }
+.install-help { border-top: 1px solid var(--line); text-align: left; max-width: 530px; margin: 22px auto 0; }
 .install-help summary { display: flex; justify-content: space-between; gap: 12px; padding-block: 16px; color: var(--green); font-size: 13px; }
 .install-help ol { padding-left: 20px; margin: 0 0 14px; font-size: 13px; color: var(--muted); }
 .install-help li + li { margin-top: 10px; }
 .install-help p { font-size: 12px; color: var(--muted); padding-bottom: 16px; }
 .install-help a { color: var(--green); }
-.install-card { background: var(--paper); border: 1px solid var(--line); border-radius: 18px; padding: 28px; }
-.card-heading { display: flex; gap: 12px; align-items: center; border-bottom: 1px solid var(--line); padding-bottom: 24px; }
-.card-heading img { border-radius: 11px; }
-.card-heading h3 { font-size: 18px; letter-spacing: -.03em; font-weight: 600; line-height: 1.3; }
-.card-heading p { font-size: 12px; color: var(--muted); margin-top: 3px; }
-.install-widget { margin: 22px auto; max-width: 230px; }
-.install-widget img { border-radius: 18px; }
-.install-widget figcaption { text-align: center; color: var(--muted); font-size: 10px; margin-top: 8px; }
-.permission-list { display: grid; gap: 24px; margin: 25px 0; padding: 0; list-style: none; }
-.permission-list li { display: flex; align-items: start; gap: 12px; }
-.permission-icon { display: grid; place-items: center; flex-shrink: 0; width: 25px; height: 25px; border: 1px solid #ccd8be; border-radius: 50%; font-size: 11px; color: var(--green); }
-.permission-list h4 { font-size: 14px; font-weight: 600; letter-spacing: -.02em; line-height: 1.5; }
-.permission-list p { font-size: 12px; color: var(--muted); margin-top: 3px; max-width: 245px; }
-.permission-status { margin-left: auto; flex-shrink: 0; font-size: 9px; border-radius: 5px; padding: 3px 7px; background: #edf3e5; color: #476537; }
-.permission-status.optional { background: #f1f1e9; color: var(--muted); }
-.card-footnote { padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 11px; line-height: 1.7; }
-.setup-details { margin-top: 16px; border-top: 1px solid var(--line); }
 summary { cursor: pointer; list-style: none; }
 summary::-webkit-details-marker { display: none; }
-.setup-details summary { display: flex; justify-content: space-between; gap: 12px; padding-top: 16px; font-size: 12px; color: var(--green); }
 summary > span { flex-shrink: 0; font-size: 19px; font-weight: 400; line-height: 1; transition: transform .18s ease; }
 details[open] > summary > span { transform: rotate(45deg); }
-.setup-preview { max-width: 300px; margin: 20px auto 0; }
-.setup-preview img { border-radius: 12px; }
-.setup-preview figcaption { font-size: 10px; color: var(--muted); margin-top: 12px; }
 
 .questions { display: grid; grid-template-columns: .9fr 1.3fr; gap: 80px; border-top: 1px solid var(--line); }
 .questions-intro h2 { font-size: 40px; }
@@ -216,7 +192,6 @@ footer nav a { padding-block: 10px; text-decoration: none; }
   .scene-sidebar h2 { font-size: 25px; }
   .product-facts { gap: 26px; }
   .privacy-panel { padding: 40px; gap: 45px; }
-  .install { gap: 50px; }
   .questions { gap: 45px; }
   .use-case { padding: 23px; }
 }
@@ -257,7 +232,7 @@ footer nav a { padding-block: 10px; text-decoration: none; }
   .privacy-intro h2 { font-size: 40px; }
   .privacy-facts h3 { font-size: 16px; }
   .privacy-facts article { gap: 12px; }
-  .install, .questions { grid-template-columns: 1fr; gap: 30px; }
+  .questions { grid-template-columns: 1fr; gap: 30px; }
   .body-copy { max-width: 100%; }
   .closing-panel { padding: 35px; gap: 25px; }
   .closing h2 { font-size: 36px; }
@@ -328,14 +303,6 @@ footer nav a { padding-block: 10px; text-decoration: none; }
   .privacy-facts article { padding-block: 20px; gap: 16px; }
   .privacy-facts h3 { font-size: 18px; }
   .privacy-facts p { font-size: 13px; }
-  .install { gap: 28px; }
-  .install-card { padding: 23px 20px; border-radius: 14px; }
-  .card-heading h3 { font-size: 16px; }
-  .permission-list { gap: 23px; }
-  .permission-list li { gap: 9px; }
-  .permission-list h4 { font-size: 13px; }
-  .permission-list p { font-size: 11px; }
-  .permission-status { font-size: 8px; padding: 3px 5px; }
   .questions { gap: 26px; }
   .questions-intro h2 { font-size: 37px; }
   .question-list summary { font-size: 14px; padding-block: 20px; }
