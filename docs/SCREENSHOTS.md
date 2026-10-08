@@ -17,8 +17,9 @@ The older `assets/demo.gif`, `assets/demo.mp4`, and their video source remain hi
 
 ## Website illustration
 
-The website hero is an HTML and CSS illustration of speech becoming text.
-The note uses synthetic example text. The voice strip is part of the illustration, not the app's interface.
-The page labels this visual as an illustration and explains that automatic paste requires Accessibility access.
+The website hero pairs an HTML and CSS illustration of a note with the actual compact widget screenshot.
+The note uses synthetic example text. The waveform is part of the illustration, not the app's interface.
+The page labels the illustrated workflow and the actual widget before setup separately.
+It explains that automatic paste requires Accessibility access.
 It does not establish recognition or delivery behavior.
 The actual setup screenshot is available in the installation section.
