@@ -82,9 +82,8 @@ h1 span { color: var(--green); }
 .waveform i:nth-child(4n) { height: 16px; }
 .waveform i:nth-child(5n) { height: 31px; }
 .scene-sidebar h2 { font-size: 28px; font-weight: 500; line-height: 1.15; letter-spacing: -.035em; }
-.scene-sidebar > p:not(.widget-caption) { color: #bdccb5; font-size: 12px; line-height: 1.6; margin-top: 12px; max-width: 265px; }
-.widget-image { width: 230px; border-radius: 18px; margin-top: 20px; box-shadow: 0 7px 18px #08110b33; }
-.scene-sidebar .widget-caption { font-size: 9px; margin-top: 7px; color: #bdccb5; }
+.scene-sidebar > p { color: #bdccb5; font-size: 12px; line-height: 1.6; margin-top: 12px; max-width: 285px; }
+.scene-sidebar .spoken-example { font-family: Georgia, "Times New Roman", serif; font-size: 19px; line-height: 1.5; color: var(--paper); margin-block: 16px; }
 .scene-shortcuts { display: flex; align-items: center; gap: 28px; border-top: 1px solid #39503c; padding-top: 16px; font-size: 10px; color: #c1cdbb; }
 .scene-shortcuts > span { display: inline-flex; align-items: center; gap: 4px; }
 .scene-shortcuts > span > span { margin-left: 5px; }
@@ -120,6 +119,9 @@ h2 { font-size: clamp(34px, 4vw, 48px); font-weight: 550; line-height: 1.07; }
 .steps p { font-size: 14px; color: var(--muted); line-height: 1.75; }
 .workflow-note { display: flex; align-items: center; gap: 12px; margin-top: 34px; padding: 16px 18px; border-radius: 9px; background: #edf1e6; font-size: 12px; color: #53664b; }
 .workflow-note .icon { width: 18px; height: 18px; }
+.transcript-benefit { display: grid; grid-template-columns: .8fr 1.2fr; align-items: center; gap: 35px; border-top: 1px solid var(--line); margin-top: 30px; padding-top: 28px; }
+.transcript-benefit h3 { font-size: 25px; font-weight: 550; }
+.transcript-benefit p { font-size: 14px; color: var(--muted); max-width: 570px; }
 
 .privacy-panel { display: grid; grid-template-columns: 1fr 1.1fr; gap: 80px; border-radius: 22px; background: var(--dark); color: var(--paper); padding: 54px; }
 .privacy-panel .eyebrow { color: var(--lime); }
@@ -146,11 +148,20 @@ h2 { font-size: clamp(34px, 4vw, 48px); font-weight: 550; line-height: 1.07; }
 .beta-disclosure p { font-size: 13px; color: var(--muted); line-height: 1.7; margin-top: 8px; }
 .beta-disclosure a { display: inline-block; font-size: 12px; margin-top: 10px; color: var(--green); }
 .install-intro > .text-link { margin-top: 16px; font-size: 12px; }
+.install-help { border-top: 1px solid var(--line); margin-top: 22px; }
+.install-help summary { display: flex; justify-content: space-between; gap: 12px; padding-block: 16px; color: var(--green); font-size: 13px; }
+.install-help ol { padding-left: 20px; margin: 0 0 14px; font-size: 13px; color: var(--muted); }
+.install-help li + li { margin-top: 10px; }
+.install-help p { font-size: 12px; color: var(--muted); padding-bottom: 16px; }
+.install-help a { color: var(--green); }
 .install-card { background: var(--paper); border: 1px solid var(--line); border-radius: 18px; padding: 28px; }
 .card-heading { display: flex; gap: 12px; align-items: center; border-bottom: 1px solid var(--line); padding-bottom: 24px; }
 .card-heading img { border-radius: 11px; }
 .card-heading h3 { font-size: 18px; letter-spacing: -.03em; font-weight: 600; line-height: 1.3; }
 .card-heading p { font-size: 12px; color: var(--muted); margin-top: 3px; }
+.install-widget { margin: 22px auto; max-width: 230px; }
+.install-widget img { border-radius: 18px; }
+.install-widget figcaption { text-align: center; color: var(--muted); font-size: 10px; margin-top: 8px; }
 .permission-list { display: grid; gap: 24px; margin: 25px 0; padding: 0; list-style: none; }
 .permission-list li { display: flex; align-items: start; gap: 12px; }
 .permission-icon { display: grid; place-items: center; flex-shrink: 0; width: 25px; height: 25px; border: 1px solid #ccd8be; border-radius: 50%; font-size: 11px; color: var(--green); }
@@ -279,13 +290,11 @@ footer nav a { padding-block: 10px; text-decoration: none; }
   .document-subtext { font-size: 16px; }
   .document-label { font-size: 8px; }
   .document-label > span { display: inline; }
-  .scene-sidebar { display: grid; grid-template-columns: 1fr 1fr; align-items: center; column-gap: 20px; }
-  .waveform { grid-column: 1; margin-bottom: 11px; gap: 4px; height: 26px; }
+  .scene-sidebar { display: block; }
+  .waveform { margin-bottom: 11px; gap: 4px; height: 26px; }
   .waveform i:nth-child(n+13) { display: none; }
-  .scene-sidebar h2 { grid-column: 1; font-size: 18px; }
-  .scene-sidebar > p:not(.widget-caption) { display: none; }
-  .widget-image { grid-column: 2; grid-row: 1 / 3; width: 100%; margin-top: 0; border-radius: 11px; }
-  .scene-sidebar .widget-caption { grid-column: 2; grid-row: 3; font-size: 8px; margin-top: 6px; }
+  .scene-sidebar h2 { font-size: 24px; }
+  .scene-sidebar .spoken-example { font-size: 18px; margin-block: 12px; }
   .scene-shortcuts { justify-content: space-between; gap: 10px; padding-top: 14px; font-size: 9px; }
   .scene-shortcuts kbd { font-size: 9px; }
   .product-preview figcaption { text-align: left; font-size: 9px; line-height: 1.65; margin-top: 11px; }
@@ -311,6 +320,8 @@ footer nav a { padding-block: 10px; text-decoration: none; }
   .steps p { font-size: 14px; }
   .workflow-note { align-items: start; padding: 15px; font-size: 11px; margin-top: 26px; }
   .workflow-note .icon { margin-top: 2px; }
+  .transcript-benefit { grid-template-columns: 1fr; gap: 14px; padding-top: 24px; }
+  .transcript-benefit h3 { font-size: 24px; }
   .privacy-panel { grid-template-columns: 1fr; padding: 29px 24px; gap: 32px; border-radius: 16px; }
   .privacy-intro h2 { font-size: 42px; }
   .privacy-intro > p:not(.eyebrow) { max-width: none; }
@@ -333,7 +344,7 @@ footer nav a { padding-block: 10px; text-decoration: none; }
   .closing-panel { flex-direction: column; align-items: start; padding: 30px 24px; gap: 26px; border-radius: 16px; }
   .closing h2 { font-size: 37px; }
   .closing-action { width: 100%; text-align: left; }
-  .closing-action .button { width: 100%; font-size: 13px; }
+  .closing-action .button { width: 100%; font-size: 13px; padding-inline: 12px; }
   .closing-action p, .closing-action > a:not(.button), .feedback-note { width: 100%; text-align: center; }
   footer { flex-direction: column; align-items: start; gap: 16px; padding-block: 24px 30px; }
   footer .brand img { width: 30px; height: 30px; }
